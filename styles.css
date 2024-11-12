@@ -1,0 +1,131 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family:"Segoe UI", "Roboto", "Helvetica Neue",
+    "Noto Sans", "Liberation Sans", "Arial", "sans-serif",
+    "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+}
+/* Center and style header */
+.header {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.header h1 {
+    font-size: 40px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0px 0px 24px;
+    color: #212529
+}
+
+.header img {
+    width: 200px;
+    vertical-align: middle;
+}
+
+/* Form section */
+.form-section {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    color: #212529;
+}
+
+
+.form-group select,
+.form-group input {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    width: 150px;
+    text-align: left;
+}
+
+.form-group select {
+    appearance: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* button styling */
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Summary Section */
+.summary-section {
+    text-align: center;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.summary-section h2 {
+    font-weight: 500;
+    color: #212529
+}
+
+
+.charts {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.chart {
+    width: 45%;
+    height: 200px;
+    border: 1px solid #ddd;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 50px;
+    color: #000;
+    font-size: 1em;
+}

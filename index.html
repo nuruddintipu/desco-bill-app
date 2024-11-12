@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yearly DESCO Postpaid Bills</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Choices.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
+</head>
+<body>
+
+<header class="header">
+    <h1>Yearly <img src="images/desco-logo.png" alt="DESCO Logo"> Postpaid Bills</h1>
+</header>
+
+<section class="form-section">
+
+    <div class="form-group">
+        <label for="month">Month</label>
+        <select id="month">
+            <option value="">All months</option><option>January</option><option>February</option><option>March</option>
+            <option>April</option><option>May</option><option>June</option>
+            <option>July</option><option>August</option><option>September</option>
+            <option>October</option><option>November</option><option>December</option>
+        </select>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const monthSelect = new Choices('#month', {
+                searchEnabled: true, // Enables the search box
+                itemSelectText: '', // Removes "Press to select" text
+
+
+            });
+        });
+    </script>
+
+    <div class="form-group">
+        <label for="year">Year</label>
+        <select id="year" placeholder="2023">
+            <option>2024</option><option>2023</option><option>2022</option>
+            <option>2021</option><option>2020</option><option>2019</option>
+            <option>2018</option><option>2017</option><option>2016</option>
+            <option>2015</option><option>2014</option><option>2013</option>
+        </select>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const monthSelect = new Choices('#year', {
+                searchEnabled: true, // Enables the search box
+                itemSelectText: '', // Removes "Press to select" text
+                placeholder: true, // Enables placeholder
+                placeholderValue: '' // Placeholder text
+            });
+        });
+    </script>
+
+    <div class="form-group">
+        <label for="biller">Biller No</label>
+        <input type="text" id="biller" placeholder="e.g., 27773">
+    </div>
+</section>
+<div class="button-container">
+    <button>Fetch Bills</button>
+</div>
+
+<section class="summary-section">
+    <p id="bill-summary-heading">Electricity Usage and Bill Summary</p>
+    <div class="charts">
+        <!-- Placeholder for charts -->
+        <div class="chart" id="electricity-usage"></div>
+        <div class="chart" id="total-bill"></div>
+    </div>
+</section>
+
+<footer>
+    Designed and Developed by Saiful Islam
+</footer>
+<!-- Choices.js JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+<script>
+    var billerInput = document.getElementById('biller');
+    const targetElement = document.getElementById('bill-summary-heading');
+
+    billerInput.addEventListener('input', function () {
+            addText(billerInput.value) ;
+        }
+    );
+    function addText (searchString) {
+        var months = ["January", "February", "March", "April", "May",
+            "June", "July", "August", "September", "October", "November", "December"];
+
+        searchString = searchString.toLowerCase();
+        targetElement.innerHTML = "";
+        var isExist = false;
+        for(var i=0; i<months.length; i++){
+            if(months[i].toLowerCase().includes(searchString)){
+                targetElement.innerHTML += ("<br>" + months[i]);
+                isExist = true;
+            }
+        }
+        if(!isExist){
+            targetElement.innerHTML = "No result found.";
+        }
+    }
+</script>
+</body>
+</html>
