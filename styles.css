@@ -132,7 +132,8 @@ footer {
     font-size: 1em;
 }
 
-.dropdown-results {
+.months-dropdown-results,
+.year-dropdown-results {
     position: absolute;
     top: 100%;
     left: 0;
@@ -145,13 +146,15 @@ footer {
     overflow-y: auto;
     z-index: 1;
 }
-.dropdown-results p {
+.months-dropdown-results div ,
+.year-dropdown-results div{
     padding: 8px 10px;
     margin: 0;
     color: #212529;
 }
 
-.dropdown-rs {
+.months-dropdown-rs,
+.year-dropdown-rs {
     display: none;
 }
 .dropdown-item {

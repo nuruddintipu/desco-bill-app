@@ -17,32 +17,19 @@
 
     <div class="form-group">
         <label for="month">Month</label>
-        <input id="month" placeholder="e.g., January">
-        <div id="dropdown-results" class="dropdown-results">
-            <div id="dropdown-rs" class="dropdown-rs"></div>
+        <input id="month" placeholder="January"/>
+        <div id="months-dropdown-results" class="months-dropdown-results">
+            <div id="months-dropdown-rs" class="months-dropdown-rs"></div>
         </div>
     </div>
 
     <div class="form-group">
         <label for="year">Year</label>
-        <select id="year" placeholder="2023">
-            <option>2024</option><option>2023</option><option>2022</option>
-            <option>2021</option><option>2020</option><option>2019</option>
-            <option>2018</option><option>2017</option><option>2016</option>
-            <option>2015</option><option>2014</option><option>2013</option>
-        </select>
+        <input id="year" placeholder="2024"/>
+        <div id="year-dropdown-results" class="year-dropdown-results">
+            <div id="year-dropdown-rs" class="year-dropdown-rs"></div>
+        </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const monthSelect = new Choices('#year', {
-                searchEnabled: true, // Enables the search box
-                itemSelectText: '', // Removes "Press to select" text
-                placeholder: true, // Enables placeholder
-                placeholderValue: '' // Placeholder text
-            });
-        });
-    </script>
-
     <div class="form-group">
         <label for="biller">Biller No</label>
         <input type="text" id="biller" placeholder="e.g., 27773">
@@ -67,53 +54,72 @@
 </footer>
 
 <script>
-    var billerInput = document.getElementById('month');
-    var dropdown = document.getElementById('dropdown-rs');
+    // Array of month and year values for dropdown data
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
 
-    var months = ["January", "February", "March", "April", "May",
-        "June", "July", "August", "September", "October", "November", "December"];
+    // Initialize dropdowns for month and year inputs
+    initializeDropdown('month', 'months-dropdown-rs', months);
+    initializeDropdown('year', 'year-dropdown-rs', years);
 
-    billerInput.addEventListener('focus', function () {
-        updateDropdown("");
-    });
+    // Function to initialize a dropdown for a specific input and dataset
+    function initializeDropdown (inputId, dropdownId, dataArray) {
+        var inputField = document.getElementById(inputId); // Input field reference
+        var dropdown = document.getElementById(dropdownId); // Dropdown container reference
 
-    billerInput.addEventListener('blur', function () {
-        setTimeout(function () {
-            dropdown.style.display = 'none';
-        }, 200);
-    });
-    billerInput.addEventListener('input', function () {
-            updateDropdown(billerInput.value) ;
-        }
-    );
-    function updateDropdown (searchString) {
-        dropdown.style.display = 'block';
-        searchString = searchString.toLowerCase();
-        dropdown.innerHTML = "";
-        var isExist = false;
-        for(var i=0; i<months.length; i++){
-            if(months[i].toLowerCase().includes(searchString)){
-                const item = document.createElement('div');
-                item.textContent = months[i];
-                item.classList.add('dropdown-item');
-                item.setAttribute('id', 'month-'+i);
-                item.setAttribute('onclick', 'onClickMonthItem('+i+')');
-                dropdown.appendChild(item);
+        // Show full dropdown when input field is focused
+        inputField.addEventListener('focus', function () {
+            updateDropdown(""); // Show all items initially
+        });
 
-                isExist = true;
+        // Hide dropdown shortly after losing focus
+        inputField.addEventListener('blur', function () {
+            setTimeout(function () {
+                dropdown.style.display = 'none';
+            }, 200);
+        });
+
+        // Update dropdown items based on current input
+        inputField.addEventListener('input', function () {
+            updateDropdown(inputField.value);
+        });
+
+        // Function to update dropdown based on search string
+        function updateDropdown (searchString) {
+            dropdown.style.display = 'block'; // Make dropdown visible
+            searchString = searchString.toLowerCase(); // Convert search string to lowercase
+            dropdown.innerHTML = ""; // Clear existing items
+            var isExist = false; // Flag to check if any result found
+
+            // Loop through dataArray and match items with search string
+            for(var i = 0; i < dataArray.length; i++) {
+                if(dataArray[i].toLowerCase().includes(searchString)) {
+                    const item = document.createElement('div'); // Create dropdown item
+                    item.textContent = dataArray[i]; // Set item text
+                    item.classList.add('dropdown-item'); // Add class for styling
+
+                    // Attach click event to update input field with selected item
+                    item.addEventListener('click', function() {
+                        onClickListItem(item);
+                    });
+                    dropdown.appendChild(item); // Add item to dropdown
+                    isExist = true;
+                }
+            }
+
+            // Display message if no matching result is found
+            if(!isExist) {
+                dropdown.innerHTML = "No result found.";
             }
         }
-        if(!isExist){
-            dropdown.innerHTML = "No result found.";
+
+        // Function to set input field value and hide dropdown on item selection
+        function onClickListItem (dataItem) {
+            inputField.value = dataItem.innerText; // Set selected value to input
+            dropdown.style.display = 'none'; // Hide dropdown
         }
     }
-    function onClickMonthItem (monthNumber){
-        let mItem = document.getElementById('month-'+monthNumber);
-        console.log(mItem);
-        billerInput.value = mItem.innerText;
-        dropdown.style.display = 'none'; // Hide dropdown after selection
-    }
-
 </script>
+
 </body>
 </html>
