@@ -44,7 +44,9 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
+
 
 .form-group label {
     margin-bottom: 5px;
@@ -128,4 +130,37 @@ footer {
     margin-top: 50px;
     color: #000;
     font-size: 1em;
+}
+
+.dropdown-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    max-height: 100px;
+    overflow-y: auto;
+    z-index: 1;
+}
+.dropdown-results p {
+    padding: 8px 10px;
+    margin: 0;
+    color: #212529;
+}
+
+.dropdown-rs {
+    display: none;
+}
+.dropdown-item {
+    padding: 8px 10px;
+    margin: 0;
+    cursor: pointer;
+    color: #212529;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
 }
