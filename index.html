@@ -38,6 +38,7 @@
 </section>
 <div class="button-container">
     <button class="fetch-bills-button" id="fetchBillsButton">Fetch Bills</button>
+    <div id="buttonLoader" class="loader" style="display: none;"></div>
 </div>
 
 <div id="errorText" class="error-text"></div>
@@ -134,11 +135,15 @@
             dropdown.style.display = 'none'; // Hide dropdown
         }
     }
+
+    const buttonLoader = document.getElementById('buttonLoader');
     document.getElementById('fetchBillsButton').addEventListener('click', async () => {
+        const fetchBillsButton = document.getElementById('fetchBillsButton');
         let targetMonth = document.getElementById('month').value;
         let targetYear = document.getElementById('year').value;
         let billerNo = document.getElementById('biller').value;
 
+        // Validate inputs
         if (!months.includes(targetMonth) || !years.includes(targetYear)) {
             window.alert("Invalid month or year. Please select from the dropdown.");
             return;
@@ -147,11 +152,21 @@
             window.alert("Biller number is required. Please provide a valid input.");
             return;
         }
+
+        // Change button text to indicate loading
+        const originalButtonText = fetchBillsButton.textContent;
+        fetchBillsButton.disabled = true; // Disable button to prevent multiple clicks
+        fetchBillsButton.textContent = "Fetching...";
+
+        // Format the month and year for bill number generation
         const monthIndex = months.indexOf(targetMonth) + 1;
         const formattedMonth = String(monthIndex).padStart(2, '0');
         const yearLastTwoDigits = targetYear.slice(-2);
 
+        // Generate the complete bill number
         const billNumber = formattedMonth+yearLastTwoDigits+billerNo;
+
+        // Prepare payload for API request
         const payload = {
             hdrs: {
                 nm: "",
@@ -183,6 +198,7 @@
             usr_inf: {}
         };
 
+        // Make the API call
         fetch('https://api.desco.utility.garlicgingar.com/bill_desco.php', {
             method: 'POST',
             headers: {
@@ -201,9 +217,15 @@
             })
             .catch(error => {
                 console.error('Error fetching the bill:', error);
+            })
+            .finally(() => {
+                // Restore the button's original text and enable it
+                fetchBillsButton.textContent = originalButtonText;
+                fetchBillsButton.disabled = false;
             });
     });
 
+    // Function to render bill summary into a table
     function renderBillSummary(data) {
         if(!data.bllr_inf){
             document.getElementById('errorText').textContent = "Please provide a valid input.";
@@ -236,8 +258,9 @@
             tableBody.appendChild(tr);
         });
     }
-    const refreshButton = document.getElementById('refreshButton');
 
+    // Reset fields and hide summary section on refresh
+    const refreshButton = document.getElementById('refreshButton');
     refreshButton.addEventListener('click', () =>{
         document.getElementById('summarySection').style.display = "none";
         document.getElementById('month').value = ""; // Reset month field
@@ -246,6 +269,7 @@
     });
 
 </script>
+
 </body>
 </html>
 <script>
