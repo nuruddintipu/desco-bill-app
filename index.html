@@ -41,7 +41,6 @@
     <div id="buttonLoader" class="loader" style="display: none;"></div>
 </div>
 
-<div id="errorText" class="error-text"></div>
 
 <section class="summary-section" id="summarySection">
     <p id="bill-summary-heading">Electricity Usage and Bill Summary</p>
@@ -156,7 +155,16 @@
         // Change button text to indicate loading
         const originalButtonText = fetchBillsButton.textContent;
         fetchBillsButton.disabled = true; // Disable button to prevent multiple clicks
-        fetchBillsButton.textContent = "Fetching...";
+        fetchBillsButton.textContent = "Fetching";
+
+        // Animate the dots
+        let dotCount = 0;
+        const maxDots = 3; // Maximum number of dots to display
+        const dotInterval = setInterval(() => {
+            dotCount = (dotCount + 1) % (maxDots + 1); // Cycle through 0, 1, 2, 3
+            fetchBillsButton.textContent = "Fetching" + ".".repeat(dotCount);
+        }, 300); // Update every 500ms
+
 
         // Format the month and year for bill number generation
         const monthIndex = months.indexOf(targetMonth) + 1;
@@ -220,6 +228,7 @@
             })
             .finally(() => {
                 // Restore the button's original text and enable it
+                clearInterval(dotInterval); // Stop the dots animation
                 fetchBillsButton.textContent = originalButtonText;
                 fetchBillsButton.disabled = false;
             });
@@ -228,7 +237,7 @@
     // Function to render bill summary into a table
     function renderBillSummary(data) {
         if(!data.bllr_inf){
-            document.getElementById('errorText').textContent = "Please provide a valid input.";
+            window.alert("Data Not Found");
             return;
         }
         document.getElementById('summarySection').style.display = "flex";

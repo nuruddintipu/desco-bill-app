@@ -169,12 +169,6 @@ footer {
     background-color: #f0f0f0;
 }
 
-.error-text {
-    display: flex;
-    justify-content: center;
-    color: red;
-}
-
 table {
     width: 36%;
     border-collapse: collapse;
