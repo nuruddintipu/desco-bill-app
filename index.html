@@ -37,15 +37,30 @@
     </div>
 </section>
 <div class="button-container">
-    <button>Fetch Bills</button>
+    <button class="fetch-bills-button" id="fetchBillsButton">Fetch Bills</button>
 </div>
 
-<section class="summary-section">
+<div id="errorText" class="error-text"></div>
+
+<section class="summary-section" id="summarySection">
     <p id="bill-summary-heading">Electricity Usage and Bill Summary</p>
     <div class="charts">
         <!-- Placeholder for charts -->
-        <div class="chart" id="electricity-usage"></div>
-        <div class="chart" id="total-bill"></div>
+        <table id="bill-summary-table" border="1" cellspacing="0" cellpadding="5">
+            <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Data rows will be inserted dynamically -->
+            </tbody>
+        </table>
+
+    </div>
+    <div class="button-container">
+        <button class="refresh-button" id="refreshButton">Refresh</button>
     </div>
 </section>
 
@@ -119,7 +134,121 @@
             dropdown.style.display = 'none'; // Hide dropdown
         }
     }
-</script>
+    document.getElementById('fetchBillsButton').addEventListener('click', async () => {
+        let targetMonth = document.getElementById('month').value;
+        let targetYear = document.getElementById('year').value;
+        let billerNo = document.getElementById('biller').value;
 
+        if (!months.includes(targetMonth) || !years.includes(targetYear)) {
+            window.alert("Invalid month or year. Please select from the dropdown.");
+            return;
+        }
+        if (!billerNo.trim()) {
+            window.alert("Biller number is required. Please provide a valid input.");
+            return;
+        }
+        const monthIndex = months.indexOf(targetMonth) + 1;
+        const formattedMonth = String(monthIndex).padStart(2, '0');
+        const yearLastTwoDigits = targetYear.slice(-2);
+
+        const billNumber = formattedMonth+yearLastTwoDigits+billerNo;
+        const payload = {
+            hdrs: {
+                nm: "",
+                ver: "",
+                tms: new Date().toISOString(),
+                ref_id: "",
+                nd_id: ""
+            },
+            trx: {
+                trx_id: "",
+                trx_tms: new Date().toISOString()
+            },
+            isOffline: false,
+            bll_inf: {
+                bll_cstnm: "",
+                bll_loc_cd: "",
+                bllr_id: "b025",
+                bll_no: billNumber,
+                bll_period: "",
+                meter_no: "",
+                bllr_accno: "",
+                bill_mobno: "",
+                bll_typ: "NM",
+                xchng_code: "",
+                last_pay_dt: "",
+                mode: "WEB",
+                amount: ""
+            },
+            usr_inf: {}
+        };
+
+        fetch('https://api.desco.utility.garlicgingar.com/bill_desco.php', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderBillSummary(data);
+            })
+            .catch(error => {
+                console.error('Error fetching the bill:', error);
+            });
+    });
+
+    function renderBillSummary(data) {
+        if(!data.bllr_inf){
+            document.getElementById('errorText').textContent = "Please provide a valid input.";
+            return;
+        }
+        document.getElementById('summarySection').style.display = "flex";
+
+        const tableBody = document.querySelector("#bill-summary-table tbody");
+        tableBody.innerHTML = ""; // Clear any existing rows
+
+        // Define rows to display from the data
+        const rows = [
+            { field: "Customer Name", value: data.bllr_inf.bll_cstnm },
+            { field: "Bill Number", value: data.bllr_inf.bll_no },
+            { field: "Account Number", value: data.bllr_inf.bllr_accno },
+            { field: "Meter Number", value: data.bllr_inf.meter_no },
+            { field: "Billing Period", value: data.bllr_inf.bll_dt_frm },
+            { field: "Due Date", value: data.bllr_inf.bll_dt_due },
+            { field: "Total Usage (kWh)", value: data.bllr_inf.totalKwh },
+            { field: "Base Amount", value: data.bllr_inf.bll_amnt },
+            { field: "VAT", value: data.bllr_inf.bll_vat },
+            { field: "Late Fee", value: data.bllr_inf.bll_late_fee },
+            { field: "Total Amount", value: `<span style="font-weight: bold; color: red;">${data.bllr_inf.bll_amnt_ttl}</span>` }
+        ];
+
+        // Populate the table with rows
+        rows.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row.field}</td><td>${row.value}</td>`;
+            tableBody.appendChild(tr);
+        });
+    }
+    const refreshButton = document.getElementById('refreshButton');
+
+    refreshButton.addEventListener('click', () =>{
+        document.getElementById('summarySection').style.display = "none";
+        document.getElementById('month').value = ""; // Reset month field
+        document.getElementById('year').value = "";  // Reset year field
+        document.getElementById('biller').value = ""; // Reset biller field
+    });
+
+</script>
 </body>
 </html>
+<script>
+
+
+</script>

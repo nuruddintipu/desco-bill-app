@@ -81,6 +81,11 @@ body {
     margin-top: 20px;
 }
 
+.refresh-button {
+    display: flex;
+    height: 40px;
+}
+
 /* button styling */
 button {
     background-color: #007bff;
@@ -100,9 +105,10 @@ button:hover {
 .summary-section {
     text-align: center;
     margin-top: 20px;
-    display: flex;
+
     justify-content: center;
     flex-direction: column;
+    display: none;
 }
 
 .summary-section h2 {
@@ -118,11 +124,6 @@ button:hover {
     margin-top: 20px;
 }
 
-.chart {
-    width: 45%;
-    height: 200px;
-    border: 1px solid #ddd;
-}
 
 /* Footer */
 footer {
@@ -166,4 +167,32 @@ footer {
 
 .dropdown-item:hover {
     background-color: #f0f0f0;
+}
+
+.error-text {
+    display: flex;
+    justify-content: center;
+    color: red;
+}
+
+table {
+    width: 36%;
+    border-collapse: collapse;
+}
+
+
+td:nth-child(1) {
+    text-align: left;
+    padding: 8px;
+    border: 1px solid #ccc;
+}
+
+td:nth-child(2) {
+    text-align: right;
+    padding: 8px;
+    border: 1px solid #ccc;
+}
+
+th,  td {
+    padding: 8px;
 }
