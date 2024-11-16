@@ -130,24 +130,24 @@ function generateBillNumber(month, year, meterNo) {
  * Adds a click event listener to fetch and display bill data based on user input.
  */
 function setupFetchBillsButton () {
-    const fetchBillsButton = getElementById('fetchBillsButton');
+    const fetchBillsButtonElement  = getElementById('fetchBillsButton');
 
-    fetchBillsButton.addEventListener('click', async () => {
+    fetchBillsButtonElement .addEventListener('click', async () => {
         const { month, year, meterNo } = getUserInput();
 
         const billNumber = generateBillNumber(month, year, meterNo);
         const payload = createPayload(billNumber);
 
-        const originalButtonText = fetchBillsButton.textContent;
-        const loadingAnimation = startButtonLoadingAnimation(fetchBillsButton);
+        const originalButtonText = fetchBillsButtonElement .textContent;
+        const loadingAnimation = startButtonLoadingAnimation(fetchBillsButtonElement );
 
         try {
-            const billData = await fetchBillData(payload, fetchBillsButton, originalButtonText, loadingAnimation);
+            const billData = await fetchBillData(payload, fetchBillsButtonElement , originalButtonText, loadingAnimation);
             renderBillSummary(billData, month, year);
         } catch (error) {
-            showErrorMessage('dataErrorMessage', true);
+            displayErrorMessage('dataErrorMessage', true);
         } finally {
-            stopButtonLoadingAnimation(fetchBillsButton, originalButtonText, loadingAnimation);
+            resetButtonState(fetchBillsButtonElement , originalButtonText, loadingAnimation);
         }
     });
 }
@@ -159,7 +159,7 @@ function setupFetchBillsButton () {
  * @param {string} originalText - The original button text.
  * @param {number} animationInterval - The interval ID for the loading animation.
  */
-function stopButtonLoadingAnimation(button, originalText, animationInterval) {
+function resetButtonState(button, originalText, animationInterval) {
     clearInterval(animationInterval);
     button.textContent = originalText;
     button.disabled = false;
@@ -310,7 +310,7 @@ function validateInput(fieldId, validValues, errorMessageId) {
     const isValid = validValues.includes(inputValue);
 
     validationStatus[fieldId] = isValid; // Update validation status
-    showErrorMessage(errorMessageId, !isValid);  //  Show/Hide error message
+    displayErrorMessage(errorMessageId, !isValid);  //  Show/Hide error message
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
 
@@ -336,7 +336,7 @@ function validateBillerNo (inputId, errorMessageId) {
     const isValidInput = /^\d+$/.test(inputValue); //only digits are allowed
 
     validationStatus[inputId] = isValidInput; // Update validation status
-    showErrorMessage(errorMessageId, !isValidInput);  //  Show/Hide error message
+    displayErrorMessage(errorMessageId, !isValidInput);  //  Show/Hide error message
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
 
@@ -356,10 +356,10 @@ function toggleFetchBillsButton () {
 function isValidData (data) {
     if (!data.bllr_inf) {
         getElementById('summarySection').style.display = "none";
-        showErrorMessage('dataErrorMessage', true);
+        displayErrorMessage('dataErrorMessage', true);
     } else {
         getElementById('summarySection').style.display = "flex";
-        showErrorMessage('dataErrorMessage', false);
+        displayErrorMessage('dataErrorMessage', false);
     }
 
     return data.bllr_inf;
@@ -379,7 +379,7 @@ function hideElementById(elementId, hide) {
     getElementById(elementId).style.display = hide ? 'none' : 'block';
 }
 
-function showErrorMessage(elementId, show) {
+function displayErrorMessage(elementId, show) {
     getElementById(elementId).style.visibility = show ? 'visible' : 'hidden';
 }
 
