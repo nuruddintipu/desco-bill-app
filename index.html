@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yearly DESCO Postpaid Bills</title>
     <link rel="stylesheet" href="styles.css">
-
 </head>
 <body>
 
@@ -14,39 +13,33 @@
 </header>
 
 <section class="form-section">
-
     <div class="form-group">
         <label for="month">Month</label>
         <input id="month" placeholder="Select a month"/>
-        <div id="months-dropdown-rs" class="months-dropdown-rs">
-
-        </div>
+        <div id="months-dropdown-rs" class="months-dropdown-rs"></div>
         <div class="month-error-message" id="monthErrorMessage">Invalid month.</div>
-
     </div>
 
     <div class="form-group">
         <label for="year">Year</label>
         <input id="year" placeholder="2024"/>
         <div class="year-error-message" id="yearErrorMessage">Invalid year.</div>
-
         <div id="year-dropdown-rs" class="year-dropdown-rs">
 
         </div>
     </div>
+
     <div class="form-group">
         <label for="biller">Biller No</label>
         <input type="text" id="biller" placeholder="e.g., 27773">
         <div class="biller-error-message" id="billerErrorMessage">Invalid biller no.</div>
-
-
     </div>
 </section>
+
 <div class="button-container">
     <div>
         <button class="fetch-bills-button" id="fetchBillsButton" disabled>Fetch Bills</button>
     </div>
-
     <div class="data-error-message" id="dataErrorMessage">Data not found.</div>
 </div>
 
@@ -71,16 +64,18 @@
             <!-- Data rows will be inserted dynamically -->
             </tbody>
         </table>
-
     </div>
+
     <div class="button-container">
         <button class="refresh-button" id="refreshButton">Refresh</button>
     </div>
+
 </section>
 
 <footer>
     Designed and Developed by Saiful Islam
 </footer>
+
 <script src="script.js"></script>
 
 </body>

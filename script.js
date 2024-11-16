@@ -1,6 +1,6 @@
 // Array of month and year values for dropdown data
-var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-var years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
 
 // Initialize dropdowns for month and year inputs
 initializeDropdown('month', 'months-dropdown-rs', months);
@@ -86,15 +86,48 @@ function setupFetchBillsButton() {
     fetchBillsButton.addEventListener('click', async () => {
         const targetMonth = getValueById('month');
         const targetYear = getValueById('year');
-        const billerNo = getValueById('biller');
+        const meterNo = getValueById('biller');
+
+        const monthIndex = getMonthIndex(targetMonth);
+        const yearIndex = getYearIndex(targetYear);
+        const billNumber = generateBillNo(monthIndex, yearIndex, meterNo);
+        const payload = createPayload(billNumber);
+
 
         const originalButtonText = fetchBillsButton.textContent;
+
         const dotInterval = startButtonLoadingAnimation(fetchBillsButton);
 
-        const payload = createPayload(targetMonth, targetYear, billerNo);
-
-        fetchBillData(payload, fetchBillsButton, originalButtonText, dotInterval);
+        const data = await fetchBillData(payload, fetchBillsButton, originalButtonText, dotInterval);
+        renderBillSummary(data, monthIndex, yearIndex);
     });
+}
+
+// Function to fetch bill data from API
+async function fetchBillData(payload, button, originalButtonText, dotInterval) {
+    return await fetch('https://api.desco.utility.garlicgingar.com/bill_desco.php', {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.error('Error fetching the bill:', error);
+            return [];
+        })
+        .finally(() => {
+            clearInterval(dotInterval);
+            button.textContent = originalButtonText;
+            button.disabled = false;
+        });
+
 }
 
 // Function to start button loading animation
@@ -104,21 +137,14 @@ function startButtonLoadingAnimation(button) {
     let dotCount = 0;
     const maxDots = 3;
 
-    const interval = setInterval(() => {
+    return setInterval(() => {
         dotCount = (dotCount + 1) % (maxDots + 1);
         button.textContent = "Fetching" + ".".repeat(dotCount);
     }, 300);
-
-    return interval;
 }
 
 // Function to create payload for API request
-function createPayload(targetMonth, targetYear, billerNo) {
-    const monthIndex = months.indexOf(targetMonth) + 1;
-    const formattedMonth = String(monthIndex).padStart(2, '0');
-    const yearLastTwoDigits = targetYear.slice(-2);
-    const billNumber = formattedMonth + yearLastTwoDigits + billerNo;
-
+function createPayload(billNumber) {
     return {
         hdrs: {
             nm: "",
@@ -149,45 +175,32 @@ function createPayload(targetMonth, targetYear, billerNo) {
         },
         usr_inf: {}
     };
+
 }
 
-// Function to fetch bill data from API
-function fetchBillData(payload, button, originalButtonText, dotInterval) {
-    fetch('https://api.desco.utility.garlicgingar.com/bill_desco.php', {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status} ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => renderBillSummary(data))
-        .catch(error => console.error('Error fetching the bill:', error))
-        .finally(() => {
-            clearInterval(dotInterval);
-            button.textContent = originalButtonText;
-            button.disabled = false;
-        });
-}
 
-// Function to render bill summary into a table
-function renderBillSummary(data) {
-    // getElementById('month-display').textContent = data.bllr_inf.bll_dt_frm;
-    if (!data.bllr_inf) {
-        showErrorMessage('dataErrorMessage', true);
-        return;
-    }
-    getElementById('summarySection').style.display = "flex";
+// Function to render bill summary into summary section
+function renderBillSummary(data, monthIndex, yearIndex) {
+    getElementById('month-display').textContent = months.at(monthIndex-1)+", 20"+yearIndex;
 
-    const tableBody = document.querySelector("#bill-summary-table tbody");
+    if (!isValidData(data))  return; // return if data is not valid ex: null data
+
+
+    const tableBody = getElementById("bill-summary-table");
     tableBody.innerHTML = "";
 
-    const rows = [
+    const rows = formateDataIntoRows(data);
+
+    rows.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${row.field}</td><td>${row.value}</td>`;
+        tableBody.appendChild(tr);
+    });
+
+}
+// Utility function to format data into rows for rendering
+function formateDataIntoRows (data) {
+    return [
         { field: "Customer Name", value: data.bllr_inf.bll_cstnm },
         { field: "Bill Number", value: data.bllr_inf.bll_no },
         { field: "Account Number", value: data.bllr_inf.bllr_accno },
@@ -200,13 +213,8 @@ function renderBillSummary(data) {
         { field: "Late Fee", value: data.bllr_inf.bll_late_fee },
         { field: "Total Amount", value: `<span style="font-weight: bold; color: red;">${data.bllr_inf.bll_amnt_ttl}</span>` }
     ];
-
-    rows.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${row.field}</td><td>${row.value}</td>`;
-        tableBody.appendChild(tr);
-    });
 }
+
 
 // Function to setup refresh button behavior
 function setupRefreshButton() {
@@ -218,7 +226,6 @@ function setupRefreshButton() {
         setValueById('biller', "");
     });
 }
-
 
 
 // Track validation status for each field
@@ -289,9 +296,18 @@ function toggleFetchBillsButton () {
     }
 }
 
+// Function to validate the Data received from API call
+function isValidData (data) {
+    if (!data.bllr_inf) {
+        getElementById('summarySection').style.display = "none";
+        showErrorMessage('dataErrorMessage', true);
+    } else {
+        getElementById('summarySection').style.display = "flex";
+        showErrorMessage('dataErrorMessage', false);
+    }
 
-// Function to make arrow key functional
-//function
+    return data.bllr_inf;
+}
 
 // Utility Functions
 function getElementById (elementId) {
@@ -310,3 +326,18 @@ function hideById(elementId, hide) {
 function showErrorMessage(elementId, show) {
     getElementById(elementId).style.visibility = show ? 'visible' : 'hidden';
 }
+
+function getMonthIndex (targetMonth){
+    const monthIndex = months.indexOf(targetMonth) + 1;
+    return String(monthIndex).padStart(2, '0');
+}
+
+function getYearIndex(targetYear) {
+    return  targetYear.slice(-2);
+}
+
+function generateBillNo (monthIndex, yearIndex, meterNo){
+    return monthIndex + yearIndex + meterNo;
+}
+
+

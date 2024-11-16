@@ -187,7 +187,14 @@ footer {
     background-color: #f0f0f0;
 }
 
-
+.arrow {
+    font-size: 25px;
+    font-weight: bolder;
+    vertical-align: center;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
 table {
     width: 36%;
     border-collapse: collapse;
