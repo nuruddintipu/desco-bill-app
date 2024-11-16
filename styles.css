@@ -75,6 +75,14 @@ body {
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
+.month-error-message,
+.year-error-message,
+.biller-error-message{
+    color: red;
+    display: none;
+}
+
+
 .button-container {
     display: flex;
     justify-content: center;
@@ -128,36 +136,30 @@ button:hover {
 /* Footer */
 footer {
     text-align: center;
+    vertical-align: bottom;
     margin-top: 50px;
     color: #000;
     font-size: 1em;
+
 }
 
-.months-dropdown-results,
-.year-dropdown-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: #fff;
-    border: 1px solid #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    max-height: 100px;
-    overflow-y: auto;
-    z-index: 1;
-}
-.months-dropdown-results div ,
-.year-dropdown-results div{
-    padding: 8px 10px;
-    margin: 0;
-    color: #212529;
-}
 
 .months-dropdown-rs,
 .year-dropdown-rs {
     display: none;
+    border: 1px solid #fff;
+    box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    position: absolute;
+    top: 65px;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
 }
+
 .dropdown-item {
     padding: 8px 10px;
     margin: 0;
@@ -168,6 +170,7 @@ footer {
 .dropdown-item:hover {
     background-color: #f0f0f0;
 }
+
 
 table {
     width: 36%;

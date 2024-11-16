@@ -17,22 +17,28 @@
 
     <div class="form-group">
         <label for="month">Month</label>
-        <input id="month" placeholder="January"/>
-        <div id="months-dropdown-results" class="months-dropdown-results">
-            <div id="months-dropdown-rs" class="months-dropdown-rs"></div>
+        <input id="month" placeholder="Select a month"/>
+        <div id="months-dropdown-rs" class="months-dropdown-rs">
+
         </div>
+        <div class="month-error-message" id="monthErrorMessage">Invalid month.</div>
+
     </div>
 
     <div class="form-group">
         <label for="year">Year</label>
         <input id="year" placeholder="2024"/>
-        <div id="year-dropdown-results" class="year-dropdown-results">
-            <div id="year-dropdown-rs" class="year-dropdown-rs"></div>
+        <div class="year-error-message" id="yearErrorMessage">Invalid year.</div>
+
+        <div id="year-dropdown-rs" class="year-dropdown-rs">
+
         </div>
     </div>
     <div class="form-group">
         <label for="biller">Biller No</label>
         <input type="text" id="biller" placeholder="e.g., 27773">
+        <div class="biller-error-message" id="billerErrorMessage">Invalid biller no.</div>
+
 
     </div>
 </section>
@@ -43,7 +49,12 @@
 
 
 <section class="summary-section" id="summarySection">
-    <p id="bill-summary-heading">Electricity Usage and Bill Summary</p>
+    <div id="bill-summary-heading">Electricity Usage and Bill Summary of</div>
+    <div id="month-navigation">
+        <span id="prev-month" class="arrow">&#8592;</span>
+        <span id="month-display">January</span>
+        <span id="next-month" class="arrow">&#8594;</span>
+    </div>
     <div class="charts">
         <!-- Placeholder for charts -->
         <table id="bill-summary-table" border="1" cellspacing="0" cellpadding="5">
@@ -67,221 +78,7 @@
 <footer>
     Designed and Developed by Saiful Islam
 </footer>
-
-<script>
-    // Array of month and year values for dropdown data
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    var years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
-
-    // Initialize dropdowns for month and year inputs
-    initializeDropdown('month', 'months-dropdown-rs', months);
-    initializeDropdown('year', 'year-dropdown-rs', years);
-
-    // Function to initialize a dropdown for a specific input and dataset
-    function initializeDropdown (inputId, dropdownId, dataArray) {
-        var inputField = document.getElementById(inputId); // Input field reference
-        var dropdown = document.getElementById(dropdownId); // Dropdown container reference
-
-        // Show full dropdown when input field is focused
-        inputField.addEventListener('focus', function () {
-            updateDropdown(""); // Show all items initially
-        });
-
-        // Hide dropdown shortly after losing focus
-        inputField.addEventListener('blur', function () {
-            setTimeout(function () {
-                dropdown.style.display = 'none';
-            }, 200);
-        });
-
-        // Update dropdown items based on current input
-        inputField.addEventListener('input', function () {
-            updateDropdown(inputField.value);
-        });
-
-        // Function to update dropdown based on search string
-        function updateDropdown (searchString) {
-            dropdown.style.display = 'block'; // Make dropdown visible
-            searchString = searchString.toLowerCase(); // Convert search string to lowercase
-            dropdown.innerHTML = ""; // Clear existing items
-            var isExist = false; // Flag to check if any result found
-
-            // Loop through dataArray and match items with search string
-            for(var i = 0; i < dataArray.length; i++) {
-                if(dataArray[i].toLowerCase().includes(searchString)) {
-                    const item = document.createElement('div'); // Create dropdown item
-                    item.textContent = dataArray[i]; // Set item text
-                    item.classList.add('dropdown-item'); // Add class for styling
-
-                    // Attach click event to update input field with selected item
-                    item.addEventListener('click', function() {
-                        onClickListItem(item);
-                    });
-                    dropdown.appendChild(item); // Add item to dropdown
-                    isExist = true;
-                }
-            }
-
-            // Display message if no matching result is found
-            if(!isExist) {
-                dropdown.innerHTML = "No result found.";
-            }
-        }
-
-        // Function to set input field value and hide dropdown on item selection
-        function onClickListItem (dataItem) {
-            inputField.value = dataItem.innerText; // Set selected value to input
-            dropdown.style.display = 'none'; // Hide dropdown
-        }
-    }
-
-    const buttonLoader = document.getElementById('buttonLoader');
-    document.getElementById('fetchBillsButton').addEventListener('click', async () => {
-        const fetchBillsButton = document.getElementById('fetchBillsButton');
-        let targetMonth = document.getElementById('month').value;
-        let targetYear = document.getElementById('year').value;
-        let billerNo = document.getElementById('biller').value;
-
-        // Validate inputs
-        if (!months.includes(targetMonth) || !years.includes(targetYear)) {
-            window.alert("Invalid month or year. Please select from the dropdown.");
-            return;
-        }
-        if (!billerNo.trim()) {
-            window.alert("Biller number is required. Please provide a valid input.");
-            return;
-        }
-
-        // Change button text to indicate loading
-        const originalButtonText = fetchBillsButton.textContent;
-        fetchBillsButton.disabled = true; // Disable button to prevent multiple clicks
-        fetchBillsButton.textContent = "Fetching";
-
-        // Animate the dots
-        let dotCount = 0;
-        const maxDots = 3; // Maximum number of dots to display
-        const dotInterval = setInterval(() => {
-            dotCount = (dotCount + 1) % (maxDots + 1); // Cycle through 0, 1, 2, 3
-            fetchBillsButton.textContent = "Fetching" + ".".repeat(dotCount);
-        }, 300); // Update every 500ms
-
-
-        // Format the month and year for bill number generation
-        const monthIndex = months.indexOf(targetMonth) + 1;
-        const formattedMonth = String(monthIndex).padStart(2, '0');
-        const yearLastTwoDigits = targetYear.slice(-2);
-
-        // Generate the complete bill number
-        const billNumber = formattedMonth+yearLastTwoDigits+billerNo;
-
-        // Prepare payload for API request
-        const payload = {
-            hdrs: {
-                nm: "",
-                ver: "",
-                tms: new Date().toISOString(),
-                ref_id: "",
-                nd_id: ""
-            },
-            trx: {
-                trx_id: "",
-                trx_tms: new Date().toISOString()
-            },
-            isOffline: false,
-            bll_inf: {
-                bll_cstnm: "",
-                bll_loc_cd: "",
-                bllr_id: "b025",
-                bll_no: billNumber,
-                bll_period: "",
-                meter_no: "",
-                bllr_accno: "",
-                bill_mobno: "",
-                bll_typ: "NM",
-                xchng_code: "",
-                last_pay_dt: "",
-                mode: "WEB",
-                amount: ""
-            },
-            usr_inf: {}
-        };
-
-        // Make the API call
-        fetch('https://api.desco.utility.garlicgingar.com/bill_desco.php', {
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
-            .then(response => {
-                if(!response.ok) {
-                    throw new Error(`Error: ${response.status} ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                renderBillSummary(data);
-            })
-            .catch(error => {
-                console.error('Error fetching the bill:', error);
-            })
-            .finally(() => {
-                // Restore the button's original text and enable it
-                clearInterval(dotInterval); // Stop the dots animation
-                fetchBillsButton.textContent = originalButtonText;
-                fetchBillsButton.disabled = false;
-            });
-    });
-
-    // Function to render bill summary into a table
-    function renderBillSummary(data) {
-        if(!data.bllr_inf){
-            window.alert("Data Not Found");
-            return;
-        }
-        document.getElementById('summarySection').style.display = "flex";
-
-        const tableBody = document.querySelector("#bill-summary-table tbody");
-        tableBody.innerHTML = ""; // Clear any existing rows
-
-        // Define rows to display from the data
-        const rows = [
-            { field: "Customer Name", value: data.bllr_inf.bll_cstnm },
-            { field: "Bill Number", value: data.bllr_inf.bll_no },
-            { field: "Account Number", value: data.bllr_inf.bllr_accno },
-            { field: "Meter Number", value: data.bllr_inf.meter_no },
-            { field: "Billing Period", value: data.bllr_inf.bll_dt_frm },
-            { field: "Due Date", value: data.bllr_inf.bll_dt_due },
-            { field: "Total Usage (kWh)", value: data.bllr_inf.totalKwh },
-            { field: "Base Amount", value: data.bllr_inf.bll_amnt },
-            { field: "VAT", value: data.bllr_inf.bll_vat },
-            { field: "Late Fee", value: data.bllr_inf.bll_late_fee },
-            { field: "Total Amount", value: `<span style="font-weight: bold; color: red;">${data.bllr_inf.bll_amnt_ttl}</span>` }
-        ];
-
-        // Populate the table with rows
-        rows.forEach(row => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${row.field}</td><td>${row.value}</td>`;
-            tableBody.appendChild(tr);
-        });
-    }
-
-    // Reset fields and hide summary section on refresh
-    const refreshButton = document.getElementById('refreshButton');
-    refreshButton.addEventListener('click', () =>{
-        document.getElementById('summarySection').style.display = "none";
-        document.getElementById('month').value = ""; // Reset month field
-        document.getElementById('year').value = "";  // Reset year field
-        document.getElementById('biller').value = ""; // Reset biller field
-    });
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
-<script>
-
-
-</script>
