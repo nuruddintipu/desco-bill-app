@@ -165,10 +165,19 @@ function resetButtonState(button, originalText, animationInterval) {
     button.disabled = false;
 }
 
-
+/**
+ * Fetches bill data from the API using the provided payload.
+ * Handles loading state and error scenarios.
+ *
+ * @param {Object} payload - The payload to send in the POST request.
+ * @param {HTMLElement} buttonElement - The button triggering the fetch operation.
+ * @param {string} originalButtonText - The original text of the button before loading.
+ * @param {number} loadingAnimation - The interval ID for the button loading animation.
+ * @returns {Promise<Object|Array>} - The fetched bill data or an empty array on failure.
+ */
 // Function to fetch bill data from API
-async function fetchBillData(payload, button, originalButtonText, dotInterval) {
-    return await fetch('https://api.desco.utility.garlicgingar.com/bill_desco.php', {
+async function fetchBillData(payload, buttonElement, originalButtonText, loadingAnimation) {
+    return await fetch(API_URL, {
         method: 'POST',
         headers: {
             'Content-type': 'application/json'
@@ -184,28 +193,37 @@ async function fetchBillData(payload, button, originalButtonText, dotInterval) {
         .catch(error => {
             console.error('Error fetching the bill:', error);
             return [];
-        })
-        .finally(() => {
-            clearInterval(dotInterval);
-            button.textContent = originalButtonText;
         });
-
 }
 
-// Function to start button loading animation
-function startButtonLoadingAnimation(button) {
-    button.disabled = true;
-    button.textContent = "Fetching";
+
+/**
+ * Starts the button loading animation by disabling the button,
+ * changing its text, and displaying a loading animation with dots.
+ *
+ * @param {HTMLElement} buttonElement - The button element to apply the animation to.
+ * @returns {number} - The interval ID to stop the animation later.
+ */
+function startButtonLoadingAnimation(buttonElement) {
+    buttonElement.disabled = true;
+
+    buttonElement.textContent = "Fetching";
+
     let dotCount = 0;
     const maxDots = 3;
 
     return setInterval(() => {
         dotCount = (dotCount + 1) % (maxDots + 1);
-        button.textContent = "Fetching" + ".".repeat(dotCount);
-    }, 300);
+        buttonElement.textContent = "Fetching" + ".".repeat(dotCount);
+    }, DOT_ANIMATION_INTERVAL);
 }
 
-// Function to create payload for API request
+
+/**
+ * Creates a payload for the API request with provided bill details.
+ * @param {string} billNumber - The bill number to include in the payload.
+ * @returns {Object} - The generated payload for the API request.
+ */
 function createPayload(billNumber) {
     return {
         hdrs: {
@@ -237,15 +255,30 @@ function createPayload(billNumber) {
         },
         usr_inf: {}
     };
-
 }
 
+/**
+ * Updates the month and year display section based on the provided month and year indices.
+ *
+ * @param {number} monthIndex - The index of the month.
+ * @param {number} yearIndex - The index of the year.
+ */
+function updateMonthYearDisplay(monthIndex, yearIndex) {
+    const monthDisplayElement = getElementById('month-display');
+    monthDisplayElement.textContent = `${months.at(monthIndex - 1)}, ${yearIndex}`;
+}
 
-// Function to render bill summary into summary section
+/**
+ * Renders the bill summary into the summary section by updating the UI with the provided data.
+ *
+ * @param {Array} data - The data containing the bill summary information.
+ * @param {number} monthIndex - The index of the target month.
+ * @param {number} yearIndex - The index of the target year.
+ */
 function renderBillSummary(data, monthIndex, yearIndex) {
-    getElementById('month-display').textContent = months.at(monthIndex-1)+", 20"+yearIndex;
+    updateMonthYearDisplay(monthIndex, yearIndex);
 
-    if (!isValidData(data))  return; // return if data is not valid ex: null data
+    if (!isValidData(data))  return;
 
 
     const tableBody = getElementById("bill-summary-table");
@@ -258,9 +291,14 @@ function renderBillSummary(data, monthIndex, yearIndex) {
         tr.innerHTML = `<td>${row.field}</td><td>${row.value}</td>`;
         tableBody.appendChild(tr);
     });
-
 }
-// Utility function to format data into rows for rendering
+
+/**
+ * Formats the bill summary data into an array of rows containing field and value.
+ *
+ * @param {Array} data - The raw bill data.
+ * @returns {Array} - The formatted array of rows.
+ */
 function formateDataIntoRows (data) {
     return [
         { field: "Customer Name", value: data.bllr_inf.bll_cstnm },
@@ -277,8 +315,10 @@ function formateDataIntoRows (data) {
     ];
 }
 
-
-// Function to setup refresh button behavior
+/**
+ * Sets up the behavior for the "Refresh" button.
+ * Clears the input fields and hides the summary section when clicked.
+ */
 function setupRefreshButton() {
     const refreshButton = getElementById('refreshButton');
     refreshButton.addEventListener('click', () => {
@@ -289,9 +329,14 @@ function setupRefreshButton() {
     });
 }
 
-
-
-// function to setup validation to all inputs
+/**
+ * Sets up validation handlers for input fields.
+ * Adds event listeners for input and blur events to trigger validation.
+ *
+ * @param {string} inputId - The ID of the input field to validate.
+ * @param {Array} validValues - An array of valid values for the input field.
+ * @param {string} errorMessageId - The ID of the element where the error message will be displayed.
+ */
 function setupValidationHandlers (inputId, validValues, errorMessageId) {
     const inputField = getElementById(inputId);
 
@@ -303,7 +348,14 @@ function setupValidationHandlers (inputId, validValues, errorMessageId) {
 
 }
 
-// Function to validate a input
+/**
+ * Validates the input field value.
+ * Checks if the input value is included in the valid values array and displays an error message if invalid.
+ *
+ * @param {string} fieldId - The ID of the input field to validate.
+ * @param {Array} validValues - An array of valid values for the input field.
+ * @param {string} errorMessageId - The ID of the error message element.
+ */
 function validateInput(fieldId, validValues, errorMessageId) {
 
     const inputValue = getValueById(fieldId).trim();
@@ -314,7 +366,13 @@ function validateInput(fieldId, validValues, errorMessageId) {
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
 
-// Functions to setup biller field validation
+/**
+ * Sets up biller number validation for input fields.
+ * Adds event listeners for input and blur events to trigger validation specific to biller number.
+ *
+ * @param {string} inputId - The ID of the input field to validate.
+ * @param {string} errorMessageId - The ID of the element where the error message will be displayed.
+ */
 function setupBillerNoValidation (inputId, errorMessageId) {
     const inputField = getElementById(inputId);
 
@@ -330,17 +388,26 @@ function setupBillerNoValidation (inputId, errorMessageId) {
 
 }
 
-// Function to validate a biller input
+/**
+ * Validates the biller number input.
+ * Ensures that the input value contains only digits.
+ *
+ * @param {string} inputId - The ID of the biller input field to validate.
+ * @param {string} errorMessageId - The ID of the error message element.
+ */
 function validateBillerNo (inputId, errorMessageId) {
     const inputValue = getValueById(inputId).trim();
-    const isValidInput = /^\d+$/.test(inputValue); //only digits are allowed
+    const isValidInput = VALID_BILLER_REGEX.test(inputValue); //only digits are allowed
 
     validationStatus[inputId] = isValidInput; // Update validation status
     displayErrorMessage(errorMessageId, !isValidInput);  //  Show/Hide error message
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
 
-// Function to enable or disable the fetch bills button
+/**
+ * Enables or disables the "Fetch Bills" button based on validation status.
+ * The button is enabled only if all fields are valid.
+ */
 function toggleFetchBillsButton () {
     const isAllButtonValid = Object.values(validationStatus).every(Boolean); // Check all fields
     const fetchBillsButton = getElementById('fetchBillsButton');
@@ -352,7 +419,14 @@ function toggleFetchBillsButton () {
     }
 }
 
-// Function to validate the Data received from API call
+
+/**
+ * Validates the data received from the API call.
+ * Checks if the data contains valid information and displays error message if invalid.
+ *
+ * @param {Object} data - The data received from the API call.
+ * @returns {boolean} - Returns true if the data is valid, otherwise false.
+ */
 function isValidData (data) {
     if (!data.bllr_inf) {
         getElementById('summarySection').style.display = "none";
@@ -365,29 +439,77 @@ function isValidData (data) {
     return data.bllr_inf;
 }
 
-// Utility Functions
+/**
+ * Retrieves an element by its ID.
+ *
+ * @param {string} elementId - The ID of the element to retrieve.
+ * @returns {HTMLElement} - The DOM element with the specified ID.
+ */
 function getElementById (elementId) {
     return document.getElementById(elementId);
 }
+
+
+/**
+ * Retrieves the value of an element by its ID.
+ *
+ * @param {string} elementId - The ID of the element to get the value from.
+ * @returns {string} - The value of the element.
+ */
 function getValueById (elementId) {
     return getElementById(elementId).value;
 }
+
+/**
+ * Sets the value of an element by its ID.
+ *
+ * @param {string} elementId - The ID of the element to set the value of.
+ * @param {string} value - The value to set for the element.
+ */
 function setValueById(elementId, value) {
     getElementById(elementId).value = value;
 }
+
+/**
+ * Hides or displays an element based on the `hide` flag.
+ *
+ * @param {string} elementId - The ID of the element to hide or show.
+ * @param {boolean} hide - Whether to hide the element (true) or show it (false).
+ */
 function hideElementById(elementId, hide) {
     getElementById(elementId).style.display = hide ? 'none' : 'block';
 }
 
+
+/**
+ * Displays or hides an error message for an element based on the `show` flag.
+ *
+ * @param {string} elementId - The ID of the error message element.
+ * @param {boolean} show - Whether to show the error message (true) or hide it (false).
+ */
 function displayErrorMessage(elementId, show) {
     getElementById(elementId).style.visibility = show ? 'visible' : 'hidden';
 }
 
+/**
+ * Gets the month index (1-based) for the provided month name.
+ *
+ * @param {string} targetMonth - The name of the month (e.g., "January").
+ * @returns {string} - The 2-digit month index (e.g., "01").
+ */
 function getMonthIndex (targetMonth){
     const monthIndex = months.indexOf(targetMonth) + 1;
     return String(monthIndex).padStart(2, '0');
 }
 
+
+
+/**
+ * Gets the 2-digit year index from the provided year string (e.g., "2024" -> "24").
+ *
+ * @param {string} targetYear - The year string (e.g., "2024").
+ * @returns {string} - The last two digits of the year (e.g., "24").
+ */
 function getYearIndex(targetYear) {
     return  targetYear.slice(-2);
 }
