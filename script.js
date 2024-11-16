@@ -12,6 +12,13 @@ setupFetchBillsButton();
 //  Attach click event for refresh button
 setupRefreshButton();
 
+
+// Attach validation handlers to all input
+setupValidationHandlers('month', months, 'monthErrorMessage');
+setupValidationHandlers('year', years, 'yearErrorMessage');
+setupBillerNoValidation('biller', 'billerErrorMessage');
+
+
 // Function to initialize a dropdown for a specific input and dataset
 function initializeDropdown (inputId, dropdownId, dataArray) {
     var inputField = getElementById(inputId); // Input field reference
@@ -27,13 +34,12 @@ function initializeDropdown (inputId, dropdownId, dataArray) {
         setTimeout(function () {
             hideById(dropdownId, true);
         }, 200);
+
     });
 
     // Update dropdown items based on current input
     inputField.addEventListener('input', function () {
         updateDropdown(getValueById(inputId));
-        console.log("This is a message");
-        validateField(inputId, dataArray);
     });
 
     // Function to update dropdown based on search string
@@ -53,7 +59,6 @@ function initializeDropdown (inputId, dropdownId, dataArray) {
                 // Attach click event to update input field with selected item
                 item.addEventListener('click', function() {
                     onClickListItem(item);
-                    validateField(inputId, dataArray);
                 });
                 dropdown.appendChild(item); // Add item to dropdown
                 isExist = true;
@@ -63,7 +68,7 @@ function initializeDropdown (inputId, dropdownId, dataArray) {
         // Display message if no matching result is found
         if(!isExist) {
             dropdown.innerHTML = "No result found.";
-            isExist = false;
+
         }
     }
 
@@ -71,20 +76,17 @@ function initializeDropdown (inputId, dropdownId, dataArray) {
     function onClickListItem (dataItem) {
         setValueById(inputId, dataItem.innerText); // Set selected value to input
         hideById(dropdownId, true); // Hide dropdown
+        validateInput(inputId, dataArray, `${inputId}ErrorMessage`);
     }
 }
 
 // Function to setup fetch bills button behavior
 function setupFetchBillsButton() {
-    const buttonLoader = getElementById('buttonLoader');
     const fetchBillsButton = getElementById('fetchBillsButton');
-
     fetchBillsButton.addEventListener('click', async () => {
         const targetMonth = getValueById('month');
         const targetYear = getValueById('year');
         const billerNo = getValueById('biller');
-
-        if (!validateInputsOnClick(targetMonth, targetYear, billerNo)) return;
 
         const originalButtonText = fetchBillsButton.textContent;
         const dotInterval = startButtonLoadingAnimation(fetchBillsButton);
@@ -95,32 +97,7 @@ function setupFetchBillsButton() {
     });
 }
 
-function validateField(fieldId, validValues) {
-    const fieldValue = getValueById(fieldId);
-    return validValues.includes(fieldValue.trim());
-}
 
-
-function validateInputsOnClick(targetMonth, targetYear, billerNo) {
-
-    let isValid = true; // Flag to track overall validity
-
-    // Check for invalid month input
-    isValid = validateField('month', months);
-    debugger;
-    hideById('monthErrorMessage', isValid);
-
-    // Check for invalid year input
-    isValid = validateField('year', years);
-    hideById('yearErrorMessage', isValid);
-
-    // Check for invalid biller number input
-    if (!billerNo.trim()) {
-        isValid = false;
-    }
-    hideById('billerErrorMessage', isValid);
-    return isValid; // Return false if any field is invalid
-}
 
 // Function to start button loading animation
 function startButtonLoadingAnimation(button) {
@@ -243,21 +220,100 @@ function setupRefreshButton() {
     });
 }
 
+// Track validation status for each field
+let validationStatus = {
+    month: false,
+    year: false,
+    biller: false
+};
+
+
+// function to setup validation to all inputs
+function setupValidationHandlers (inputId, validValues, errorMessageId) {
+    const inputField = getElementById(inputId);
+
+    // Validate on focus/typing
+    inputField.addEventListener('input', () => validateInput(inputId, validValues, errorMessageId));
+
+    // Validate on blur
+    inputField.addEventListener('blur', () => validateInput(inputId, validValues, errorMessageId));
+
+}
+
+// Function to validate a input
+function validateInput(fieldId, validValues, errorMessageId) {
+
+    const inputValue = getValueById(fieldId).trim();
+    const isValid = validValues.includes(inputValue);
+
+    validationStatus[fieldId] = isValid; // Update validation status
+    hideById(errorMessageId, isValid);  //  Show/Hide error message
+    toggleFetchBillsButton();          //   Enable/disable fetch bills button
+}
+
+// Functions to setup biller field validation
+function setupBillerNoValidation (inputId, errorMessageId) {
+    const inputField = getElementById(inputId);
+
+//     Validate on typing
+    inputField.addEventListener('input', () => {
+       validateBillerNo(inputId, errorMessageId)
+    });
+
+//     Validate on blur
+    inputField.addEventListener('blur', () => {
+       validateBillerNo(inputId, errorMessageId)
+    });
+
+}
+
+// Function to validate a biller input
+function validateBillerNo (inputId, errorMessageId) {
+    const inputValue = getValueById(inputId).trim();
+    const isValidInput = /^\d+$/.test(inputValue); //only digits are allowed
+
+    validationStatus[inputId] = isValidInput; // Update validation status
+    hideById(errorMessageId, isValidInput);  //  Show/Hide error message
+    toggleFetchBillsButton();          //   Enable/disable fetch bills button
+}
+
+
+// Function to enable or disable the fetch bills button
+function toggleFetchBillsButton () {
+    const isAllButtonValid = Object.values(validationStatus).every(Boolean); // Check all fields
+    const fetchBillsButton = getElementById('fetchBillsButton');
+    fetchBillsButton.disabled = !isAllButtonValid;
+}
 
 
 
+
+function isValidMonth() {
+    const monthInput = getValueById('month');
+    return months.includes(monthInput.trim());
+}
+
+function isValidYear() {
+    const yearInput = getValueById('year');
+    return years.includes(yearInput.trim());
+}
+
+
+function isValidBillerNo() {
+    const billerInput = getValueById('biller');
+    return /^\d+$/.test(billerInput);
+}
+
+// Utility Functions
 function getElementById (elementId) {
     return document.getElementById(elementId);
 }
-
 function getValueById (elementId) {
     return getElementById(elementId).value;
 }
-
 function setValueById(elementId, value) {
     getElementById(elementId).value = value;
 }
-
-function hideById(elementId, isHide) {
-    getElementById(elementId).style.display = isHide ? 'none' : 'block';
+function hideById(elementId, hide) {
+    getElementById(elementId).style.display = hide ? 'none' : 'block';
 }

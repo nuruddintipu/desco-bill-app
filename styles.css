@@ -4,16 +4,24 @@
     padding: 0;
     box-sizing: border-box;
 }
-body {
+html, body {
     font-family:"Segoe UI", "Roboto", "Helvetica Neue",
     "Noto Sans", "Liberation Sans", "Arial", "sans-serif",
     "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
+    height: 100%;
+
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 /* Center and style header */
 .header {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 40px;
 }
 
 .header h1 {
@@ -22,13 +30,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0px 0px 24px;
     color: #212529
 }
 
 .header img {
     width: 200px;
     vertical-align: middle;
+    padding-top: 15px;
 }
 
 /* Form section */
@@ -137,9 +145,10 @@ button:hover {
 footer {
     text-align: center;
     vertical-align: bottom;
-    margin-top: 50px;
+    margin-top: auto;
     color: #000;
     font-size: 1em;
+    padding: 10px 0;
 
 }
 
