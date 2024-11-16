@@ -1,83 +1,101 @@
-// Array of month and year values for dropdown data
+// Constant
+const API_URL =  'https://api.desco.utility.garlicgingar.com/bill_desco.php';
+const VALID_BILLER_REGEX = /^\d+$/;
+const DOT_ANIMATION_INTERVAL = 300;
+const NO_RESULT_MESSAGE = "No result found.";
+
+// Dropdown data
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
 
-// Initialize dropdowns for month and year inputs
+// Validation State
+const validationStatus = { month: false, year: false, biller: false };
+
+// initialization
 initializeDropdown('month', 'months-dropdown-rs', months);
 initializeDropdown('year', 'year-dropdown-rs', years);
-
-// Attach click event for fetch bill button
-setupFetchBillsButton();
-
-//  Attach click event for refresh button
-setupRefreshButton();
-
-
-// Attach validation handlers to all input
 setupValidationHandlers('month', months, 'monthErrorMessage');
 setupValidationHandlers('year', years, 'yearErrorMessage');
 setupBillerNoValidation('biller', 'billerErrorMessage');
+setupFetchBillsButton();
+setupRefreshButton();
 
+/**
+ * Dropdown Initialization
+ * @param {string} inputId - ID of the input field
+ * @param {string} dropdownId - ID of the dropdown container
+ * @param {Array} options - Array of dropdown data
+ */
 
 // Function to initialize a dropdown for a specific input and dataset
-function initializeDropdown (inputId, dropdownId, dataArray) {
-    var inputField = getElementById(inputId); // Input field reference
-    var dropdown = getElementById(dropdownId); // Dropdown container reference
+function initializeDropdown (inputId, dropdownId, options) {
+    const inputElement = getElementById(inputId);
+    const dropdownList = getElementById(dropdownId);
 
-    // Show full dropdown when input field is focused
-    inputField.addEventListener('focus', function () {
-        updateDropdown(""); // Show all items initially
-    });
+    inputElement.addEventListener('focus', () => updateDropdownList(""));
+    inputElement.addEventListener('blur', () =>  setTimeout(() => hideElementById(dropdownId, true), 200));
+    inputElement.addEventListener('input', () => updateDropdownList(getValueById(inputId)));
 
-    // Hide dropdown shortly after losing focus
-    inputField.addEventListener('blur', function () {
-        setTimeout(function () {
-            hideById(dropdownId, true);
-        }, 200);
-
-    });
-
-    // Update dropdown items based on current input
-    inputField.addEventListener('input', function () {
-        updateDropdown(getValueById(inputId));
-    });
-
-    // Function to update dropdown based on search string
-    function updateDropdown (searchString) {
-        hideById(dropdownId, false); // Make dropdown visible
-        searchString = searchString.trim().toLowerCase(); // Convert search string to lowercase
-        dropdown.innerHTML = "";
-        var isExist = false; // Flag to check if any result found
+    function updateDropdownList (searchQuery) {
+        hideElementById(dropdownId, false);
+        searchQuery = searchQuery.trim().toLowerCase();
+        clearInnerHTML(dropdownList);
+        let hasResults = false;
 
         // Loop through dataArray and match items with search string
-        for(var i = 0; i < dataArray.length; i++) {
-            if(dataArray[i].toLowerCase().includes(searchString)) {
-                const item = document.createElement('div'); // Create dropdown item
-                item.textContent = dataArray[i]; // Set item text
-                item.classList.add('dropdown-item'); // Add class for styling
-
-                // Attach click event to update input field with selected item
-                item.addEventListener('click', function() {
-                    onClickListItem(item);
-                });
-                dropdown.appendChild(item); // Add item to dropdown
-                isExist = true;
+       options.forEach(option => {
+            if(option.toLowerCase().includes(searchQuery)) {
+                const dropDownItem = createDropdownItem(option);
+                dropdownList.appendChild(dropDownItem);
+                hasResults = true;
             }
-        }
-
-        // Display message if no matching result is found
-        if(!isExist) {
-            dropdown.innerHTML = "No result found.";
-
+        });
+        if(!hasResults) {
+            showNoResultMessage(dropdownList);
         }
     }
 
-    // Function to set input field value and hide dropdown on item selection
-    function onClickListItem (dataItem) {
-        setValueById(inputId, dataItem.innerText); // Set selected value to input
-        hideById(dropdownId, true); // Hide dropdown
-        validateInput(inputId, dataArray, `${inputId}ErrorMessage`);
+    /**
+     * Creates a dropdown item element with click functionality.
+     * @param {string} optionText - The text of the dropdown item.
+     * @returns {HTMLElement} - The created dropdown item element.
+     */
+    function createDropdownItem(optionText) {
+        const newDropdownItem = document.createElement('div');
+        newDropdownItem.textContent = optionText;
+        newDropdownItem.classList.add('dropdown-item');
+        newDropdownItem.addEventListener('click', () => handleDropdownItemClick(optionText));
+        return newDropdownItem;
     }
+
+    /**
+     * Handles dropdown item click to update the input value and hide the dropdown.
+     * @param {string} selectedOption - The value of the selected dropdown item.
+     */
+    function handleDropdownItemClick (selectedOption) {
+        setValueById(inputId, selectedOption);
+        hideElementById(dropdownId, true);
+        validateInput(inputId, options, `${inputId}ErrorMessage`);
+    }
+}
+
+/**
+ * Appends a "No result found" message to the dropdown container.
+ * @param {HTMLElement} dropdownElement - The dropdown container to display the message in.
+ */
+function showNoResultMessage(dropdownElement) {
+    const noResultDiv = document.createElement('div');
+    noResultDiv.textContent = NO_RESULT_MESSAGE;
+    noResultDiv.classList.add('dropdown-item', 'no-result');
+    dropdownElement.appendChild(noResultDiv);
+}
+
+/**
+ * Clears all items from the dropdown.
+ * @param {HTMLElement} element - The container to clear.
+ */
+function clearInnerHTML(element) {
+    element.innerHTML = '';
 }
 
 // Function to setup fetch bills button behavior
@@ -220,7 +238,7 @@ function formateDataIntoRows (data) {
 function setupRefreshButton() {
     const refreshButton = getElementById('refreshButton');
     refreshButton.addEventListener('click', () => {
-        hideById('summarySection', true);
+        hideElementById('summarySection', true);
         setValueById('month', "");
         setValueById('year', "");
         setValueById('biller', "");
@@ -228,12 +246,6 @@ function setupRefreshButton() {
 }
 
 
-// Track validation status for each field
-let validationStatus = {
-    month: false,
-    year: false,
-    biller: false
-};
 
 // function to setup validation to all inputs
 function setupValidationHandlers (inputId, validValues, errorMessageId) {
@@ -319,7 +331,7 @@ function getValueById (elementId) {
 function setValueById(elementId, value) {
     getElementById(elementId).value = value;
 }
-function hideById(elementId, hide) {
+function hideElementById(elementId, hide) {
     getElementById(elementId).style.display = hide ? 'none' : 'block';
 }
 

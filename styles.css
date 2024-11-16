@@ -190,7 +190,6 @@ footer {
 .arrow {
     font-size: 25px;
     font-weight: bolder;
-    vertical-align: center;
     display: inline-block;
     text-align: center;
     cursor: pointer;
