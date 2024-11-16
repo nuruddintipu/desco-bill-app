@@ -98,28 +98,73 @@ function clearInnerHTML(element) {
     element.innerHTML = '';
 }
 
-// Function to setup fetch bills button behavior
-function setupFetchBillsButton() {
-    const fetchBillsButton = getElementById('fetchBillsButton');
-    fetchBillsButton.addEventListener('click', async () => {
-        const targetMonth = getValueById('month');
-        const targetYear = getValueById('year');
-        const meterNo = getValueById('biller');
+/**
+ * Retrieves user input values for month, year, and biller.
+ * @returns {Object} An object containing `month`, `year`, and `meterNo` values.
+ */
+function getUserInput() {
+    return {
+        month: getValueById('month'),
+        year: getValueById('year'),
+        meterNo: getValueById('biller'),
+    };
+}
 
-        const monthIndex = getMonthIndex(targetMonth);
-        const yearIndex = getYearIndex(targetYear);
-        const billNumber = generateBillNo(monthIndex, yearIndex, meterNo);
+
+/**
+ * Generates a bill number based on the month, year, and biller inputs.
+ * @param {string} month - Selected month.
+ * @param {string} year - Selected year.
+ * @param {string} meterNo - Meter number.
+ * @returns {string} A unique bill number.
+ */
+function generateBillNumber(month, year, meterNo) {
+    const monthIndex = getMonthIndex(month);
+    const yearIndex = getYearIndex(year);
+    return monthIndex + yearIndex + meterNo;
+}
+
+
+/**
+ * Sets up behavior for the "Fetch Bills" button.
+ * Adds a click event listener to fetch and display bill data based on user input.
+ */
+function setupFetchBillsButton () {
+    const fetchBillsButton = getElementById('fetchBillsButton');
+
+    fetchBillsButton.addEventListener('click', async () => {
+        const { month, year, meterNo } = getUserInput();
+
+        const billNumber = generateBillNumber(month, year, meterNo);
         const payload = createPayload(billNumber);
 
-
         const originalButtonText = fetchBillsButton.textContent;
+        const loadingAnimation = startButtonLoadingAnimation(fetchBillsButton);
 
-        const dotInterval = startButtonLoadingAnimation(fetchBillsButton);
-
-        const data = await fetchBillData(payload, fetchBillsButton, originalButtonText, dotInterval);
-        renderBillSummary(data, monthIndex, yearIndex);
+        try {
+            const billData = await fetchBillData(payload, fetchBillsButton, originalButtonText, loadingAnimation);
+            renderBillSummary(billData, month, year);
+        } catch (error) {
+            showErrorMessage('dataErrorMessage', true);
+        } finally {
+            stopButtonLoadingAnimation(fetchBillsButton, originalButtonText, loadingAnimation);
+        }
     });
 }
+
+
+/**
+ * Stops the button's loading animation and resets its text.
+ * @param {HTMLElement} button - The button element.
+ * @param {string} originalText - The original button text.
+ * @param {number} animationInterval - The interval ID for the loading animation.
+ */
+function stopButtonLoadingAnimation(button, originalText, animationInterval) {
+    clearInterval(animationInterval);
+    button.textContent = originalText;
+    button.disabled = false;
+}
+
 
 // Function to fetch bill data from API
 async function fetchBillData(payload, button, originalButtonText, dotInterval) {
@@ -143,7 +188,6 @@ async function fetchBillData(payload, button, originalButtonText, dotInterval) {
         .finally(() => {
             clearInterval(dotInterval);
             button.textContent = originalButtonText;
-            button.disabled = false;
         });
 
 }
@@ -348,8 +392,5 @@ function getYearIndex(targetYear) {
     return  targetYear.slice(-2);
 }
 
-function generateBillNo (monthIndex, yearIndex, meterNo){
-    return monthIndex + yearIndex + meterNo;
-}
 
 
