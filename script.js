@@ -97,8 +97,6 @@ function setupFetchBillsButton() {
     });
 }
 
-
-
 // Function to start button loading animation
 function startButtonLoadingAnimation(button) {
     button.disabled = true;
@@ -179,8 +177,9 @@ function fetchBillData(payload, button, originalButtonText, dotInterval) {
 
 // Function to render bill summary into a table
 function renderBillSummary(data) {
+    // getElementById('month-display').textContent = data.bllr_inf.bll_dt_frm;
     if (!data.bllr_inf) {
-        window.alert("Data Not Found");
+        showErrorMessage('dataErrorMessage', true);
         return;
     }
     getElementById('summarySection').style.display = "flex";
@@ -220,13 +219,14 @@ function setupRefreshButton() {
     });
 }
 
+
+
 // Track validation status for each field
 let validationStatus = {
     month: false,
     year: false,
     biller: false
 };
-
 
 // function to setup validation to all inputs
 function setupValidationHandlers (inputId, validValues, errorMessageId) {
@@ -247,7 +247,7 @@ function validateInput(fieldId, validValues, errorMessageId) {
     const isValid = validValues.includes(inputValue);
 
     validationStatus[fieldId] = isValid; // Update validation status
-    hideById(errorMessageId, isValid);  //  Show/Hide error message
+    showErrorMessage(errorMessageId, !isValid);  //  Show/Hide error message
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
 
@@ -273,36 +273,25 @@ function validateBillerNo (inputId, errorMessageId) {
     const isValidInput = /^\d+$/.test(inputValue); //only digits are allowed
 
     validationStatus[inputId] = isValidInput; // Update validation status
-    hideById(errorMessageId, isValidInput);  //  Show/Hide error message
+    showErrorMessage(errorMessageId, !isValidInput);  //  Show/Hide error message
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
-
 
 // Function to enable or disable the fetch bills button
 function toggleFetchBillsButton () {
     const isAllButtonValid = Object.values(validationStatus).every(Boolean); // Check all fields
     const fetchBillsButton = getElementById('fetchBillsButton');
     fetchBillsButton.disabled = !isAllButtonValid;
+    if(!isAllButtonValid){
+        fetchBillsButton.style.backgroundColor = '#0059c3';
+    } else {
+        fetchBillsButton.style.backgroundColor = '';
+    }
 }
 
 
-
-
-function isValidMonth() {
-    const monthInput = getValueById('month');
-    return months.includes(monthInput.trim());
-}
-
-function isValidYear() {
-    const yearInput = getValueById('year');
-    return years.includes(yearInput.trim());
-}
-
-
-function isValidBillerNo() {
-    const billerInput = getValueById('biller');
-    return /^\d+$/.test(billerInput);
-}
+// Function to make arrow key functional
+//function
 
 // Utility Functions
 function getElementById (elementId) {
@@ -316,4 +305,8 @@ function setValueById(elementId, value) {
 }
 function hideById(elementId, hide) {
     getElementById(elementId).style.display = hide ? 'none' : 'block';
+}
+
+function showErrorMessage(elementId, show) {
+    getElementById(elementId).style.visibility = show ? 'visible' : 'hidden';
 }

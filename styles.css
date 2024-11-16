@@ -53,6 +53,7 @@ body{
     display: flex;
     flex-direction: column;
     position: relative;
+    margin-bottom: 20px; /* Ensure spacing between input fields */
 }
 
 
@@ -85,16 +86,22 @@ body{
 
 .month-error-message,
 .year-error-message,
-.biller-error-message{
+.biller-error-message,
+.data-error-message{
     color: red;
-    display: none;
+    visibility: hidden; /* Take up space but remain hidden */
+    height: 20px; /* Set a fixed height for error messages */
+    font-size: 1em;
 }
 
 
 .button-container {
     display: flex;
+    align-items: center;
     justify-content: center;
+    flex-direction: column;
     margin-top: 20px;
+    position: relative;
 }
 
 .refresh-button {
@@ -111,6 +118,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
+    margin-top: auto;
 }
 
 button:hover {
@@ -121,13 +129,12 @@ button:hover {
 .summary-section {
     text-align: center;
     margin-top: 20px;
-
     justify-content: center;
     flex-direction: column;
     display: none;
 }
 
-.summary-section h2 {
+.bill-summary-heading {
     font-weight: 500;
     color: #212529
 }

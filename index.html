@@ -43,16 +43,19 @@
     </div>
 </section>
 <div class="button-container">
-    <button class="fetch-bills-button" id="fetchBillsButton" disabled>Fetch Bills</button>
+    <div>
+        <button class="fetch-bills-button" id="fetchBillsButton" disabled>Fetch Bills</button>
+    </div>
 
+    <div class="data-error-message" id="dataErrorMessage">Data not found.</div>
 </div>
 
 
 <section class="summary-section" id="summarySection">
-    <div id="bill-summary-heading">Electricity Usage and Bill Summary of</div>
+    <div id="bill-summary-heading" class="bill-summary-heading">Electricity Usage and Bill Summary of</div>
     <div id="month-navigation">
         <span id="prev-month" class="arrow">&#8592;</span>
-        <span id="month-display">January</span>
+        <span id="month-display"></span>
         <span id="next-month" class="arrow">&#8594;</span>
     </div>
     <div class="charts">
