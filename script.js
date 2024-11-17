@@ -4,6 +4,7 @@ const VALID_BILLER_REGEX = /^\d+$/;
 const DOT_ANIMATION_INTERVAL = 300;
 const NO_RESULT_MESSAGE = "No result found.";
 let currentData;
+
 // Dropdown data
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
@@ -100,7 +101,18 @@ function setupFetchBillsButton () {
     });
 }
 
-
+/**
+ * Processes bill data by creating a payload, fetching data, rendering the summary,
+ * and handling errors or resetting the button state.
+ *
+ * @param {HTMLElement} buttonElement - The button element triggering the process.
+ * @param {string} billNo - The bill number to be processed.
+ * @param {string} month - The month related to the bill (name or index-based, depending on usage).
+ * @param {string|number} year - The year related to the bill.
+ * @param {string} originalButtonText - The original text of the button, used to reset its state.
+ * @param {HTMLElement} loadingAnimation - The animation element to indicate loading state.
+ * @returns {Promise<void>} - A promise that resolves once the process is complete.
+ */
 async function processBillData(buttonElement, billNo, month, year, originalButtonText, loadingAnimation) {
     try {
         const payload = createPayload(billNo);
@@ -124,7 +136,6 @@ async function processBillData(buttonElement, billNo, month, year, originalButto
  * @param {number} loadingAnimation - The interval ID for the button loading animation.
  * @returns {Promise<Object|Array>} - The fetched bill data or an empty array on failure.
  */
-// Function to fetch bill data from API
 async function fetchBillData(payload, buttonElement, originalButtonText, loadingAnimation) {
     return await fetch(API_URL, {
         method: 'POST',
