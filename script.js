@@ -92,22 +92,26 @@ function setupFetchBillsButton () {
         const { month, year, meterNo } = getUserInput();
 
         const billNumber = generateBillNumber(month, year, meterNo);
-        const payload = createPayload(billNumber);
 
         const originalButtonText = fetchBillsButtonElement .textContent;
         const loadingAnimation = startButtonLoadingAnimation(fetchBillsButtonElement );
 
-        try {
-            const billData = await fetchBillData(payload, fetchBillsButtonElement , originalButtonText, loadingAnimation);
-            renderBillSummary(billData, month, year);
-        } catch (error) {
-            displayErrorMessage('dataErrorMessage', true);
-        } finally {
-            resetButtonState(fetchBillsButtonElement , originalButtonText, loadingAnimation);
-        }
+        await processBillData(fetchBillsButtonElement, billNumber, month, year, originalButtonText, loadingAnimation);
     });
 }
 
+
+async function processBillData(buttonElement, billNo, month, year, originalButtonText, loadingAnimation) {
+    try {
+        const payload = createPayload(billNo);
+        const billData = await fetchBillData(payload, buttonElement, originalButtonText, loadingAnimation);
+        renderBillSummary(billData, month, year);
+    } catch (error) {
+        displayErrorMessage('dataErrorMessage', true);
+    } finally {
+        resetButtonState(buttonElement, originalButtonText, loadingAnimation);
+    }
+}
 
 
 /**
@@ -290,16 +294,11 @@ async function fetchAndRenderBill(billNo, month, year, fullYear) {
     const buttonElement = getElementById('fetchBillsButton');
     const loadingAnimation = startButtonLoadingAnimation(buttonElement);
 
-    try {
-        const payload = createPayload(billNo);
-        const billData = await fetchBillData(payload, buttonElement, "Fetch Bills", loadingAnimation);
-        renderBillSummary(billData, months[month - 1], fullYear);
-    } catch (error) {
-        displayErrorMessage('dataErrorMessage', true);
-    } finally {
-        resetButtonState(buttonElement, 'Fetch Bills', loadingAnimation);
-    }
+    const monthName = months[month-1];
+    await processBillData(buttonElement, billNo, monthName, fullYear, "Fetch Bills", loadingAnimation);
 }
+
+
 
 /**
  * Formats the bill summary data into an array of rows containing field and value.
