@@ -90,9 +90,9 @@ function setupFetchBillsButton () {
     const fetchBillsButtonElement  = getElementById('fetchBillsButton');
 
     fetchBillsButtonElement .addEventListener('click', async () => {
-        const { month, year, meterNo } = getUserInput();
+        const { month, year, billerNo } = getUserInput();
 
-        const billNumber = generateBillNumber(month, year, meterNo);
+        const billNumber = generateBillNumber(month, year, billerNo);
 
         const originalButtonText = fetchBillsButtonElement .textContent;
         const loadingAnimation = startButtonLoadingAnimation(fetchBillsButtonElement );
@@ -591,13 +591,13 @@ function clearInnerHTML(element) {
 
 /**
  * Retrieves user input values for month, year, and biller.
- * @returns {Object} An object containing `month`, `year`, and `meterNo` values.
+ * @returns {Object} An object containing `month`, `year`, and `billerNo` values.
  */
 function getUserInput() {
     return {
         month: getValueById('month'),
         year: getValueById('year'),
-        meterNo: getValueById('biller'),
+        billerNo: getValueById('biller'),
     };
 }
 
@@ -606,11 +606,11 @@ function getUserInput() {
  * Generates a bill number based on the month, year, and biller inputs.
  * @param {string} month - Selected month.
  * @param {string} year - Selected year.
- * @param {string} meterNo - Meter number.
+ * @param {string} billerNo - Meter number.
  * @returns {string} A unique bill number.
  */
-function generateBillNumber(month, year, meterNo) {
+function generateBillNumber(month, year, billerNo) {
     const monthIndex = getMonthIndex(month);
     const yearIndex = getYearIndex(year);
-    return monthIndex + yearIndex + meterNo;
+    return monthIndex + yearIndex + billerNo;
 }
