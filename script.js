@@ -3,7 +3,7 @@ const API_URL =  'https://api.desco.utility.garlicgingar.com/bill_desco.php';
 const VALID_BILLER_REGEX = /^\d+$/;
 const DOT_ANIMATION_INTERVAL = 300;
 const NO_RESULT_MESSAGE = "No result found.";
-
+let currentData;
 // Dropdown data
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const years = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010"];
@@ -19,6 +19,7 @@ setupValidationHandlers('year', years, 'yearErrorMessage');
 setupBillerNoValidation('biller', 'billerErrorMessage');
 setupFetchBillsButton();
 setupRefreshButton();
+// enableMonthNavigation();
 
 /**
  * Dropdown Initialization
@@ -79,51 +80,6 @@ function initializeDropdown (inputId, dropdownId, options) {
     }
 }
 
-/**
- * Appends a "No result found" message to the dropdown container.
- * @param {HTMLElement} dropdownElement - The dropdown container to display the message in.
- */
-function showNoResultMessage(dropdownElement) {
-    const noResultDiv = document.createElement('div');
-    noResultDiv.textContent = NO_RESULT_MESSAGE;
-    noResultDiv.classList.add('dropdown-item', 'no-result');
-    dropdownElement.appendChild(noResultDiv);
-}
-
-/**
- * Clears all items from the dropdown.
- * @param {HTMLElement} element - The container to clear.
- */
-function clearInnerHTML(element) {
-    element.innerHTML = '';
-}
-
-/**
- * Retrieves user input values for month, year, and biller.
- * @returns {Object} An object containing `month`, `year`, and `meterNo` values.
- */
-function getUserInput() {
-    return {
-        month: getValueById('month'),
-        year: getValueById('year'),
-        meterNo: getValueById('biller'),
-    };
-}
-
-
-/**
- * Generates a bill number based on the month, year, and biller inputs.
- * @param {string} month - Selected month.
- * @param {string} year - Selected year.
- * @param {string} meterNo - Meter number.
- * @returns {string} A unique bill number.
- */
-function generateBillNumber(month, year, meterNo) {
-    const monthIndex = getMonthIndex(month);
-    const yearIndex = getYearIndex(year);
-    return monthIndex + yearIndex + meterNo;
-}
-
 
 /**
  * Sets up behavior for the "Fetch Bills" button.
@@ -153,17 +109,6 @@ function setupFetchBillsButton () {
 }
 
 
-/**
- * Stops the button's loading animation and resets its text.
- * @param {HTMLElement} button - The button element.
- * @param {string} originalText - The original button text.
- * @param {number} animationInterval - The interval ID for the loading animation.
- */
-function resetButtonState(button, originalText, animationInterval) {
-    clearInterval(animationInterval);
-    button.textContent = originalText;
-    button.disabled = false;
-}
 
 /**
  * Fetches bill data from the API using the provided payload.
@@ -194,28 +139,6 @@ async function fetchBillData(payload, buttonElement, originalButtonText, loading
             console.error('Error fetching the bill:', error);
             return [];
         });
-}
-
-
-/**
- * Starts the button loading animation by disabling the button,
- * changing its text, and displaying a loading animation with dots.
- *
- * @param {HTMLElement} buttonElement - The button element to apply the animation to.
- * @returns {number} - The interval ID to stop the animation later.
- */
-function startButtonLoadingAnimation(buttonElement) {
-    buttonElement.disabled = true;
-
-    buttonElement.textContent = "Fetching";
-
-    let dotCount = 0;
-    const maxDots = 3;
-
-    return setInterval(() => {
-        dotCount = (dotCount + 1) % (maxDots + 1);
-        buttonElement.textContent = "Fetching" + ".".repeat(dotCount);
-    }, DOT_ANIMATION_INTERVAL);
 }
 
 
@@ -260,27 +183,29 @@ function createPayload(billNumber) {
 /**
  * Updates the month and year display section based on the provided month and year indices.
  *
- * @param {number} monthIndex - The index of the month.
- * @param {number} yearIndex - The index of the year.
+ * @param {String} month - The index of the month.
+ * @param {String} year - The index of the year.
  */
-function updateMonthYearDisplay(monthIndex, yearIndex) {
+function updateMonthYearDisplay(month, year) {
     const monthDisplayElement = getElementById('month-display');
-    monthDisplayElement.textContent = `${months.at(monthIndex - 1)}, ${yearIndex}`;
+    monthDisplayElement.textContent = `${month}, ${year}`;
 }
+
+
 
 /**
  * Renders the bill summary into the summary section by updating the UI with the provided data.
  *
  * @param {Array} data - The data containing the bill summary information.
- * @param {number} monthIndex - The index of the target month.
- * @param {number} yearIndex - The index of the target year.
+ * @param {String} month - The target month.
+ * @param {String} year - The target year.
  */
-function renderBillSummary(data, monthIndex, yearIndex) {
-    updateMonthYearDisplay(monthIndex, yearIndex);
+function renderBillSummary(data, month, year) {
+    updateMonthYearDisplay(month, year);
 
     if (!isValidData(data))  return;
-
-
+    currentData = data;
+    enableMonthNavigation()
     const tableBody = getElementById("bill-summary-table");
     tableBody.innerHTML = "";
 
@@ -291,6 +216,89 @@ function renderBillSummary(data, monthIndex, yearIndex) {
         tr.innerHTML = `<td>${row.field}</td><td>${row.value}</td>`;
         tableBody.appendChild(tr);
     });
+}
+
+
+/**
+ * Enables navigation through months by updating the displayed data for the specified month and year.
+ */
+function enableMonthNavigation() {
+    const prevMonthElement = getElementById('prevMonth');
+    const nextMonthElement = getElementById('nextMonth');
+
+    prevMonthElement.addEventListener('click', () => goToPrevMonth());
+    nextMonthElement.addEventListener('click', () => goToNextMonth());
+}
+
+async function goToPrevMonth() {
+    await navigateMonth(-1);
+}
+
+
+async function goToNextMonth() {
+    await navigateMonth(+1);
+}
+
+/**
+ * Handles navigation to a different month based on the given direction.
+ *
+ * @param {number} direction - The direction to navigate (-1 for previous month, 1 for next month).
+ */
+async function navigateMonth(direction) {
+    const { bll_dt_frm, bllr_accno } = currentData.bllr_inf;
+    const [currYearFull, currMonthIndex] = bll_dt_frm.split('-').map(Number);
+
+    const { newMonthIndex, newYear } = calculateNewDate(currMonthIndex, currYearFull % 100, direction);
+
+    const billNo = generateBillNumber(months[newMonthIndex-1], "20"+newYear, bllr_accno);
+
+    // Fetch and render the new bill data
+    await fetchAndRenderBill(billNo, newMonthIndex, newYear, "20"+newYear);
+}
+
+
+
+/**
+ * Calculates the new month and year based on the current month, year, and navigation direction.
+ *
+ * @param {number} currMonth - The current month (1-12).
+ * @param {number} currYear - The last two digits of the current year.
+ * @param {number} direction - The direction to navigate (-1 for previous, 1 for next).
+ * @returns {Object} An object containing the new month and year.
+ */
+function calculateNewDate(currMonth, currYear, direction) {
+    let newMonthIndex = currMonth + direction;
+    if (newMonthIndex < 1) {
+        newMonthIndex = 12;
+        currYear--;
+    } else if (newMonthIndex > 12) {
+        newMonthIndex = 1;
+        currYear++;
+    }
+    return { newMonthIndex, newYear: currYear };
+}
+
+/**
+ * Fetches and renders the bill data for the specified parameters.
+ *
+ * @param {string} billNo - The bill number to fetch.
+ * @param {number} month - The new month (1-12).
+ * @param {number} year - The last two digits of the new year.
+ * @param {number} fullYear - The full year (e.g., 2024).
+ */
+async function fetchAndRenderBill(billNo, month, year, fullYear) {
+    const buttonElement = getElementById('fetchBillsButton');
+    const loadingAnimation = startButtonLoadingAnimation(buttonElement);
+
+    try {
+        const payload = createPayload(billNo);
+        const billData = await fetchBillData(payload, buttonElement, "Fetch Bills", loadingAnimation);
+        renderBillSummary(billData, months[month - 1], fullYear);
+    } catch (error) {
+        displayErrorMessage('dataErrorMessage', true);
+    } finally {
+        resetButtonState(buttonElement, 'Fetch Bills', loadingAnimation);
+    }
 }
 
 /**
@@ -315,6 +323,8 @@ function formateDataIntoRows (data) {
     ];
 }
 
+
+
 /**
  * Sets up the behavior for the "Refresh" button.
  * Clears the input fields and hides the summary section when clicked.
@@ -327,6 +337,42 @@ function setupRefreshButton() {
         setValueById('year', "");
         setValueById('biller', "");
     });
+}
+
+/**
+ * Enables or disables the "Fetch Bills" button based on validation status.
+ * The button is enabled only if all fields are valid.
+ */
+function toggleFetchBillsButton () {
+    const isAllButtonValid = Object.values(validationStatus).every(Boolean); // Check all fields
+    const fetchBillsButton = getElementById('fetchBillsButton');
+    fetchBillsButton.disabled = !isAllButtonValid;
+    if(!isAllButtonValid){
+        fetchBillsButton.style.backgroundColor = '#0059c3';
+    } else {
+        fetchBillsButton.style.backgroundColor = '';
+    }
+}
+
+
+
+/**
+ * Validates the data received from the API call.
+ * Checks if the data contains valid information and displays error message if invalid.
+ *
+ * @param {Object} data - The data received from the API call.
+ * @returns {boolean} - Returns true if the data is valid, otherwise false.
+ */
+function isValidData (data) {
+    if (!data.bllr_inf) {
+        getElementById('summarySection').style.display = "none";
+        displayErrorMessage('dataErrorMessage', true);
+    } else {
+        getElementById('summarySection').style.display = "flex";
+        displayErrorMessage('dataErrorMessage', false);
+    }
+
+    return data.bllr_inf;
 }
 
 /**
@@ -378,12 +424,12 @@ function setupBillerNoValidation (inputId, errorMessageId) {
 
 //     Validate on typing
     inputField.addEventListener('input', () => {
-       validateBillerNo(inputId, errorMessageId)
+        validateBillerNo(inputId, errorMessageId)
     });
 
 //     Validate on blur
     inputField.addEventListener('blur', () => {
-       validateBillerNo(inputId, errorMessageId)
+        validateBillerNo(inputId, errorMessageId)
     });
 
 }
@@ -404,40 +450,94 @@ function validateBillerNo (inputId, errorMessageId) {
     toggleFetchBillsButton();          //   Enable/disable fetch bills button
 }
 
-/**
- * Enables or disables the "Fetch Bills" button based on validation status.
- * The button is enabled only if all fields are valid.
- */
-function toggleFetchBillsButton () {
-    const isAllButtonValid = Object.values(validationStatus).every(Boolean); // Check all fields
-    const fetchBillsButton = getElementById('fetchBillsButton');
-    fetchBillsButton.disabled = !isAllButtonValid;
-    if(!isAllButtonValid){
-        fetchBillsButton.style.backgroundColor = '#0059c3';
-    } else {
-        fetchBillsButton.style.backgroundColor = '';
-    }
-}
-
 
 /**
- * Validates the data received from the API call.
- * Checks if the data contains valid information and displays error message if invalid.
+ * Starts the button loading animation by disabling the button,
+ * changing its text, and displaying a loading animation with dots.
  *
- * @param {Object} data - The data received from the API call.
- * @returns {boolean} - Returns true if the data is valid, otherwise false.
+ * @param {HTMLElement} buttonElement - The button element to apply the animation to.
+ * @returns {number} - The interval ID to stop the animation later.
  */
-function isValidData (data) {
-    if (!data.bllr_inf) {
-        getElementById('summarySection').style.display = "none";
-        displayErrorMessage('dataErrorMessage', true);
-    } else {
-        getElementById('summarySection').style.display = "flex";
-        displayErrorMessage('dataErrorMessage', false);
-    }
+function startButtonLoadingAnimation(buttonElement) {
+    buttonElement.disabled = true;
 
-    return data.bllr_inf;
+    buttonElement.textContent = "Fetching";
+
+    let dotCount = 0;
+    const maxDots = 3;
+
+    return setInterval(() => {
+        dotCount = (dotCount + 1) % (maxDots + 1);
+        buttonElement.textContent = "Fetching" + ".".repeat(dotCount);
+    }, DOT_ANIMATION_INTERVAL);
 }
+
+/**
+ * Hides or displays an element based on the `hide` flag.
+ *
+ * @param {string} elementId - The ID of the element to hide or show.
+ * @param {boolean} hide - Whether to hide the element (true) or show it (false).
+ */
+function hideElementById(elementId, hide) {
+    getElementById(elementId).style.display = hide ? 'none' : 'block';
+}
+
+/**
+ * Appends a "No result found" message to the dropdown container.
+ * @param {HTMLElement} dropdownElement - The dropdown container to display the message in.
+ */
+function showNoResultMessage(dropdownElement) {
+    const noResultDiv = document.createElement('div');
+    noResultDiv.textContent = NO_RESULT_MESSAGE;
+    noResultDiv.classList.add('dropdown-item', 'no-result');
+    dropdownElement.appendChild(noResultDiv);
+}
+
+/**
+ * Displays or hides an error message for an element based on the `show` flag.
+ *
+ * @param {string} elementId - The ID of the error message element.
+ * @param {boolean} show - Whether to show the error message (true) or hide it (false).
+ */
+function displayErrorMessage(elementId, show) {
+    getElementById(elementId).style.visibility = show ? 'visible' : 'hidden';
+}
+
+
+/**
+ * Stops the button's loading animation and resets its text.
+ * @param {HTMLElement} button - The button element.
+ * @param {string} originalText - The original button text.
+ * @param {number} animationInterval - The interval ID for the loading animation.
+ */
+function resetButtonState(button, originalText, animationInterval) {
+    clearInterval(animationInterval);
+    button.textContent = originalText;
+    button.disabled = false;
+}
+
+/**
+ * Gets the month index (1-based) for the provided month name.
+ *
+ * @param {string} targetMonth - The name of the month (e.g., "January").
+ * @returns {string} - The 2-digit month index (e.g., "01").
+ */
+function getMonthIndex (targetMonth){
+    const monthIndex = months.indexOf(targetMonth) + 1;
+    return String(monthIndex).padStart(2, '0');
+}
+
+/**
+ * Gets the 2-digit year index from the provided year string (e.g., "2024" -> "24").
+ *
+ * @param {string} targetYear - The year string (e.g., "2024").
+ * @returns {string} - The last two digits of the year (e.g., "24").
+ */
+function getYearIndex(targetYear) {
+    return  targetYear.slice(-2);
+}
+
+
 
 /**
  * Retrieves an element by its ID.
@@ -448,7 +548,6 @@ function isValidData (data) {
 function getElementById (elementId) {
     return document.getElementById(elementId);
 }
-
 
 /**
  * Retrieves the value of an element by its ID.
@@ -470,49 +569,38 @@ function setValueById(elementId, value) {
     getElementById(elementId).value = value;
 }
 
+
+
 /**
- * Hides or displays an element based on the `hide` flag.
- *
- * @param {string} elementId - The ID of the element to hide or show.
- * @param {boolean} hide - Whether to hide the element (true) or show it (false).
+ * Clears all items from the dropdown.
+ * @param {HTMLElement} element - The container to clear.
  */
-function hideElementById(elementId, hide) {
-    getElementById(elementId).style.display = hide ? 'none' : 'block';
+function clearInnerHTML(element) {
+    element.innerHTML = '';
+}
+
+/**
+ * Retrieves user input values for month, year, and biller.
+ * @returns {Object} An object containing `month`, `year`, and `meterNo` values.
+ */
+function getUserInput() {
+    return {
+        month: getValueById('month'),
+        year: getValueById('year'),
+        meterNo: getValueById('biller'),
+    };
 }
 
 
 /**
- * Displays or hides an error message for an element based on the `show` flag.
- *
- * @param {string} elementId - The ID of the error message element.
- * @param {boolean} show - Whether to show the error message (true) or hide it (false).
+ * Generates a bill number based on the month, year, and biller inputs.
+ * @param {string} month - Selected month.
+ * @param {string} year - Selected year.
+ * @param {string} meterNo - Meter number.
+ * @returns {string} A unique bill number.
  */
-function displayErrorMessage(elementId, show) {
-    getElementById(elementId).style.visibility = show ? 'visible' : 'hidden';
+function generateBillNumber(month, year, meterNo) {
+    const monthIndex = getMonthIndex(month);
+    const yearIndex = getYearIndex(year);
+    return monthIndex + yearIndex + meterNo;
 }
-
-/**
- * Gets the month index (1-based) for the provided month name.
- *
- * @param {string} targetMonth - The name of the month (e.g., "January").
- * @returns {string} - The 2-digit month index (e.g., "01").
- */
-function getMonthIndex (targetMonth){
-    const monthIndex = months.indexOf(targetMonth) + 1;
-    return String(monthIndex).padStart(2, '0');
-}
-
-
-
-/**
- * Gets the 2-digit year index from the provided year string (e.g., "2024" -> "24").
- *
- * @param {string} targetYear - The year string (e.g., "2024").
- * @returns {string} - The last two digits of the year (e.g., "24").
- */
-function getYearIndex(targetYear) {
-    return  targetYear.slice(-2);
-}
-
-
-
