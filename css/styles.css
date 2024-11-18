@@ -17,7 +17,28 @@ body{
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
+    background-color: #eaeaea;
+
 }
+
+.night-mood-container {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    top: 60px;
+    left: 260px;
+}
+.night-mood-icon {
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: 20px; /* Set the width of the icon */
+    height: 20px; /* Set the height of the icon */
+    transition: all 0.3s ease;
+}
+
 /* Center and style header */
 .header {
     text-align: center;
@@ -214,4 +235,90 @@ td:nth-child(2) {
 
 th,  td {
     padding: 8px;
+}
+
+
+
+
+/* Responsive Styles */
+
+/* For Tablets and Smaller Devices (less than 768px) */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 30px;
+    }
+
+    .header img {
+        width: 150px;
+    }
+
+    .form-group select,
+    .form-group input {
+        width: 100%; /* Make inputs and selects full width */
+    }
+
+    .form-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .button-container {
+        margin-top: 15px;
+    }
+
+    .charts {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    table {
+        width: 80%; /* Make the table width more flexible */
+    }
+
+    footer {
+        font-size: 0.9em;
+    }
+}
+
+/* For Mobile Devices (less than 480px) */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 24px;
+        flex-direction: column;
+    }
+
+    .header img {
+        width: 120px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group select,
+    .form-group input {
+        width: 100%; /* Full width on smaller screens */
+        font-size: 0.9em;
+    }
+
+    .button-container {
+        margin-top: 10px;
+    }
+
+    .charts {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    table {
+        width: 100%; /* Full table width for mobile */
+    }
+
+    footer {
+        font-size: 0.8em;
+    }
+
+    .dropdown-item {
+        padding: 5px 10px;
+    }
 }

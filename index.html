@@ -8,20 +8,23 @@
 </head>
 <body>
 
+<div class="night-mood-container">
+    <img src="images/dark-mode-icon.png" class="night-mood-icon" id="toggleDarkMode" alt="Night Mood Icon"/>
+</div>
 <header class="header">
-    <h1>Yearly <img src="images/desco-logo.png" alt="DESCO Logo"> Postpaid Bills</h1>
-</header>
+    <h1 id="header-text all-txt" class="all-txt">Yearly <img src="images/desco-logo.png" id="descoIcon" alt="DESCO Logo"> Postpaid Bills</h1>
 
+</header>
 <section class="form-section">
     <div class="form-group">
-        <label for="month">Month</label>
+        <label for="month" class="all-txt">Month</label>
         <input id="month" placeholder="Select a month"/>
         <div id="months-dropdown-rs" class="months-dropdown-rs"></div>
         <div class="month-error-message" id="monthErrorMessage">Invalid month.</div>
     </div>
 
     <div class="form-group">
-        <label for="year">Year</label>
+        <label for="year" class="all-txt">Year</label>
         <input id="year" placeholder="2024"/>
         <div class="year-error-message" id="yearErrorMessage">Invalid year.</div>
         <div id="year-dropdown-rs" class="year-dropdown-rs">
@@ -30,7 +33,7 @@
     </div>
 
     <div class="form-group">
-        <label for="biller">Biller No</label>
+        <label for="biller" class="all-txt">Biller No</label>
         <input type="text" id="biller" placeholder="e.g., 24027770">
         <div class="biller-error-message" id="billerErrorMessage">Invalid biller no.</div>
     </div>
@@ -45,7 +48,7 @@
 
 
 <section class="summary-section" id="summarySection">
-    <div id="bill-summary-heading" class="bill-summary-heading">Electricity Usage and Bill Summary of</div>
+    <div id="bill-summary-heading" class="bill-summary-heading all-txt">Electricity Usage and Bill Summary of</div>
     <div id="month-navigation">
         <span id="prevMonth" class="arrow">&#8592;</span>
         <span id="month-display"></span>
@@ -72,7 +75,7 @@
 
 </section>
 
-<footer>
+<footer class="footer-element all-txt">
     Designed and Developed by Nuruddin Tipu
 </footer>
 

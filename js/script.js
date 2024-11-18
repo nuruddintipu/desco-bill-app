@@ -3,6 +3,7 @@ const API_URL =  'https://api.desco.utility.garlicgingar.com/bill_desco.php';
 const VALID_BILLER_REGEX = /^\d+$/;
 const DOT_ANIMATION_INTERVAL = 300;
 const NO_RESULT_MESSAGE = "No result found.";
+
 let currentData;
 
 // Dropdown data
@@ -20,7 +21,110 @@ setupValidationHandlers('year', years, 'yearErrorMessage');
 setupBillerNoValidation('biller', 'billerErrorMessage');
 setupFetchBillsButton();
 setupRefreshButton();
-// enableMonthNavigation();
+initializeDarkModeToggle();
+
+
+/**
+ * Initialize the dark mode toggle functionality and set the initial mode.
+ */
+function initializeDarkModeToggle(){
+    const darkModeToggleIcon  = document.getElementById("toggleDarkMode");
+    const bodyElement  = document.body;
+
+    const allTextElements = getElementsByClass('.all-txt');
+
+    if (isDarkModeEnabled()) activateDarkMode(allTextElements, bodyElement);
+
+    darkModeToggleIcon.addEventListener("click", function () {
+        if (isDarkModeEnabled()) {
+            deactivateDarkMood(allTextElements, bodyElement);
+        } else {
+            activateDarkMode(allTextElements, bodyElement);
+        }
+    });
+}
+
+
+/**
+ * Activate dark mode: apply dark mode styles, update icons, and save preference.
+ * @param {NodeList} allTextElements - List of elements to apply text color changes.
+ * @param {HTMLElement} bodyElement - The body element of the document.
+ */
+function activateDarkMode(allTextElements, bodyElement) {
+    updateBackgroundColor(bodyElement, '#2b2b2b', "white");
+    updateImageSource("descoIcon", "images/desco-logo-white-tagline.png");
+    updateImageSource('toggleDarkMode', "images/white-mode-icon.png");
+    updateTextColor(allTextElements, "white");
+    localStorage.setItem('darkMode', 'enabled');
+}
+
+
+/**
+ * Deactivate dark mode: revert dark mode styles, update icons, and save preference.
+ * @param {NodeList} allTextElements - List of elements to apply text color changes.
+ * @param {HTMLElement} bodyElement - The body element of the document.
+ */
+function deactivateDarkMood(allTextElements, bodyElement) {
+    updateBackgroundColor(bodyElement, '', "");
+    updateImageSource("descoIcon", "images/desco-logo.png");
+    updateImageSource('toggleDarkMode', "images/dark-mode-icon.png");
+    updateTextColor(allTextElements, "black");
+    localStorage.setItem('darkMode', 'disabled');
+}
+
+
+/**
+ * Check if dark mode is enabled by retrieving the preference from localStorage.
+ * @returns {boolean} True if dark mode is enabled, otherwise false.
+ */
+function isDarkModeEnabled () {
+    return localStorage.getItem('darkMode') === 'enabled';
+}
+
+
+/**
+ * Update the background and text colors of the body element.
+ * @param {HTMLElement} body - The body element of the document.
+ * @param {string} backgroundColor - The desired background color.
+ * @param {string} textColor - The desired text color.
+ */
+function updateBackgroundColor(body, backgroundColor, textColor) {
+    body.style.backgroundColor = backgroundColor;
+    body.style.color = textColor;
+}
+
+
+/**
+ * Update the image source for a given element ID.
+ * @param {string} elementId - The ID of the image element.
+ * @param {string} newSource - The new source URL for the image.
+ */
+function updateImageSource(elementId, newSource) {
+    const imageElement = getElementById(elementId);
+    imageElement.src = newSource;
+}
+/**
+ * Update the text color of multiple elements.
+ * @param {NodeList} elements - List of elements to update.
+ * @param {string} color - The desired text color.
+ */
+function updateTextColor(elements, color) {
+    elements.forEach(element => {
+        element.style.color = color;
+    });
+}
+
+
+/**
+ * Get all elements matching a given selector.
+ * @param {string} selector - The CSS selector to match elements.
+ * @returns {NodeList} A NodeList of matching elements.
+ */
+function getElementsByClass(selector) {
+    return document.querySelectorAll(selector);
+}
+
+
 
 /**
  * Dropdown Initialization
@@ -28,7 +132,6 @@ setupRefreshButton();
  * @param {string} dropdownId - ID of the dropdown container
  * @param {Array} options - Array of dropdown data
  */
-
 // Function to initialize a dropdown for a specific input and dataset
 function initializeDropdown (inputId, dropdownId, options) {
     const inputElement = getElementById(inputId);
