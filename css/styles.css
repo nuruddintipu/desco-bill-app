@@ -10,7 +10,7 @@ html, body {
     "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
     height: 100%;
-
+    width: 100%;
 }
 
 body{
@@ -27,7 +27,8 @@ body{
     justify-content: center;
     position: relative;
     top: 60px;
-    left: 260px;
+    left: 925px;
+    width: 20px;
 }
 .night-mood-icon {
     cursor: pointer;
@@ -244,7 +245,8 @@ th,  td {
 /* For Tablets and Smaller Devices (less than 768px) */
 @media (max-width: 768px) {
     .header h1 {
-        font-size: 30px;
+        font-size: 30px;;
+        flex-direction: column;
     }
 
     .header img {
@@ -283,7 +285,8 @@ th,  td {
         justify-content: center;
         position: relative;
         top: 30px;
-        left: 190px;
+        left: 350px;
+        width: 20px;
     }
 }
 
@@ -333,7 +336,8 @@ th,  td {
         display: flex;
         justify-content: center;
         position: relative;
-        top: 30px;
-        left: 90px;
+        top: 20px;
+        left: 300px;
+        width: 20px;
     }
 }
