@@ -16,11 +16,10 @@ html, body {
 body{
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100%;
     max-width: 100%;
     overflow-x: hidden;
     background-color: #eaeaea;
-
 }
 
 .night-mood-container {
@@ -278,6 +277,14 @@ th,  td {
     footer {
         font-size: 0.9em;
     }
+
+    .night-mood-container {
+        display: flex;
+        justify-content: center;
+        position: relative;
+        top: 30px;
+        left: 190px;
+    }
 }
 
 /* For Mobile Devices (less than 480px) */
@@ -320,5 +327,13 @@ th,  td {
 
     .dropdown-item {
         padding: 5px 10px;
+    }
+
+    .night-mood-container {
+        display: flex;
+        justify-content: center;
+        position: relative;
+        top: 30px;
+        left: 90px;
     }
 }
